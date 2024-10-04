@@ -1,7 +1,7 @@
 from django.db import models
 
 # Create your models here.
-class Centre(models.Model):
+class preschool_centre(models.Model):
     tp_code = models.CharField(max_length=255)
     centre_code = models.CharField(max_length=255)
     centre_name = models.CharField(max_length=255)
