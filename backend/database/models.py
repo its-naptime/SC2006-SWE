@@ -1,6 +1,5 @@
 from django.db import models
 
-# Create your models here.
 class preschool_centre(models.Model):
     tp_code = models.CharField(max_length=255)
     centre_code = models.CharField(max_length=255)
@@ -70,3 +69,14 @@ class preschool_centre(models.Model):
 
     def __str__(self):
         return self.centre_name
+
+class preschool_charges(models.Model):
+    centre_code = models.CharField(max_length=255)
+    centre_name = models.CharField(max_length=255)
+    incidental_charges = models.CharField(max_length=255)
+    frequency = models.CharField(max_length=255)
+    amount = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.centre_name
+
