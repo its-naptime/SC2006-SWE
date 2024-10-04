@@ -23,17 +23,17 @@ class Command(BaseCommand):
             cursor = conn.cursor()
 
             # Execute the query to fetch data
-            cursor.execute("SELECT * FROM preschool_charges")
+            cursor.execute("SELECT * FROM school_cca")
             records = cursor.fetchall()
             for record in records:
                 record_dict = dict(zip(columns, record))
                 preschool_centre.objects.update_or_create(
-                    centre_code=record_dict['centre_code'],
+                    school_name=record_dict['school_name'],
                     defaults={
-                        'centre_name': record_dict['centre_name'],
-                        'incidental_charges': record_dict['incidental_charges'],
-                        'frequency': record_dict['frequency'],
-                        'amount': record_dict['amount']
+                        'school_section': record_dict['school_section'],
+                        'cca_grouping_desc': record_dict['cca_grouping_desc'],
+                        'cca_generic_name': record_dict['cca_generic_name'],
+                        'cca_customized_name': record_dict['cca_customized_name']
                     }
                 )
 

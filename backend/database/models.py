@@ -80,3 +80,48 @@ class preschool_charges(models.Model):
     def __str__(self):
         return self.centre_name
 
+class school_info(models.Model):
+    school_name = models.CharField(max_length=255)
+    url_address = models.URLField()
+    address = models.TextField()
+    postal_code = models.CharField(max_length=10)
+    telephone_no = models.CharField(max_length=20)
+    telephone_no_2 = models.CharField(max_length=20, blank=True, null=True)
+    fax_no = models.CharField(max_length=20, blank=True, null=True)
+    fax_no_2 = models.CharField(max_length=20, blank=True, null=True)
+    email_address = models.EmailField()
+    mrt_desc = models.TextField(blank=True, null=True)
+    bus_desc = models.TextField(blank=True, null=True)
+    principal_name = models.CharField(max_length=255)
+    first_vp_name = models.CharField(max_length=255, blank=True, null=True)
+    second_vp_name = models.CharField(max_length=255, blank=True, null=True)
+    third_vp_name = models.CharField(max_length=255, blank=True, null=True)
+    fourth_vp_name = models.CharField(max_length=255, blank=True, null=True)
+    fifth_vp_name = models.CharField(max_length=255, blank=True, null=True)
+    sixth_vp_name = models.CharField(max_length=255, blank=True, null=True)
+    dgp_code = models.CharField(max_length=255)
+    zone_code = models.CharField(max_length=255)
+    type_code = models.CharField(max_length=255)
+    nature_code = models.CharField(max_length=255)
+    session_code = models.CharField(max_length=255)
+    mainlevel_code = models.CharField(max_length=255)
+    sap_ind = models.CharField(max_length=255)
+    autonomous_ind = models.CharField(max_length=255)
+    gifted_ind = models.CharField(max_length=255)
+    ip_ind = models.CharField(max_length=255)
+    mothertongue1_code = models.CharField(max_length=255)
+    mothertongue2_code = models.CharField(max_length=255, blank=True, null=True)
+    mothertongue3_code = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return self.school_name
+
+class school_cca(models.Model):
+    school_name = models.CharField(max_length=255)
+    school_section = models.CharField(max_length=255)
+    cca_grouping_desc = models.CharField(max_length=255)
+    cca_generic_name = models.CharField(max_length=255)
+    cca_customized_name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.cca_customized_name

@@ -23,7 +23,7 @@ class Command(BaseCommand):
             cursor = conn.cursor()
 
             # Execute the query to fetch data
-            cursor.execute("SELECT * FROM preschool_centre")  # Replace with your actual table name
+            cursor.execute("SELECT * FROM preschool_centre") 
             records = cursor.fetchall()
 
             # Define the column names based on your table structure
@@ -32,7 +32,7 @@ class Command(BaseCommand):
             for record in records:
                 record_dict = dict(zip(columns, record))
                 preschool_centre.objects.update_or_create(
-                    centre_code=record_dict.get('tp_code'),  # Use a unique field to identify records
+                    id=record_dict.get('id'),  # Use a unique field to identify records
                     defaults={
                         'tp_code': record_dict.get('tp_code'),
                         'centre_name': record_dict.get('centre_name'),
@@ -108,3 +108,4 @@ class Command(BaseCommand):
             if conn:
                 cursor.close()
                 conn.close()
+                return record_dict

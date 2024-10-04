@@ -23,23 +23,19 @@ class Command(BaseCommand):
             cursor = conn.cursor()
 
             # Execute the query to fetch data
-            cursor.execute("SELECT * FROM preschool_charges")
-            records = cursor.fetchall()
-            for record in records:
-                record_dict = dict(zip(columns, record))
-                preschool_centre.objects.update_or_create(
-                    centre_code=record_dict['centre_code'],
-                    defaults={
-                        'centre_name': record_dict['centre_name'],
-                        'incidental_charges': record_dict['incidental_charges'],
-                        'frequency': record_dict['frequency'],
-                        'amount': record_dict['amount']
-                    }
-                )
+            cursor.execute("SELECT * FROM school_info") 
 
             # Define the column names based on your table structure
-            columns = [desc[0] for desc in cursor.description]
+            columns = [
+                'school_name', 'url_address', 'address', 'postal_code', 'telephone_no', 'telephone_no_2',
+                'fax_no', 'fax_no_2', 'email_address', 'mrt_desc', 'bus_desc', 'principal_name',
+                'first_vp_name', 'second_vp_name', 'third_vp_name', 'fourth_vp_name', 'fifth_vp_name',
+                'sixth_vp_name', 'dgp_code', 'zone_code', 'type_code', 'nature_code', 'session_code',
+                'mainlevel_code', 'sap_ind', 'autonomous_ind', 'gifted_ind', 'ip_ind', 'mothertongue1_code',
+                'mothertongue2_code', 'mothertongue3_code'
+            ]
 
+            records = cursor.fetchall()
             for record in records:
                 record_dict = dict(zip(columns, record))
   
