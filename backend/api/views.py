@@ -7,5 +7,5 @@ from rest_framework.permissons import IsAuthenticated, AllowAny
 # Create your own views here
 class createUserView(generics.CreateAPIView):
     queryset = User.objects.all()
-    serializer_class = User
+    serializer_class = UserSerializer
     Permission_classes = [AllowAny]
