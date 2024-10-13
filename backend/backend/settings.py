@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from datetime import timedelta
 
 # Load environment vars
 load_dotenv()
@@ -30,9 +31,21 @@ SECRET_KEY = 'django-insecure-x-9b%!)w@)f9bqe2q4c43es26r&0wl9126+ea5i6l9p)2o06fk
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permssions.IsAuthenticated",
+    ],
+}
 
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME"; timedelta(days=1),
+}
 # Application definition
 
 INSTALLED_APPS = [
@@ -64,6 +77,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     # Add any other allowed origins here
 ]
+#CORS_ALLOWS_CREDENTIALS = True
 
 
 ROOT_URLCONF = 'backend.urls'
