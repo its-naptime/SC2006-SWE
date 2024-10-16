@@ -125,3 +125,19 @@ class school_cca(models.Model):
 
     def __str__(self):
         return self.cca_customized_name
+
+class HDB_data(models.Model):
+    month = models.CharField(max_length=7)
+    town = models.CharField(max_length=255)
+    flat_type = models.CharField(max_length=255)
+    block = models.CharField(max_length=255)
+    street_name = models.CharField(max_length=255)
+    storey_range = models.CharField(max_length=255)
+    floor_area_sqm = models.DecimalField(max_digits=10, decimal_places=2)
+    flat_model = models.CharField(max_length=255)
+    lease_commence_date = models.IntegerField()
+    remaining_lease = models.CharField(max_length=255)
+    resale_price = models.DecimalField(max_digits=15, decimal_places=2)
+
+    def __str__(self):
+        return f"{self.town} - {self.flat_type} - {self.resale_price}"
