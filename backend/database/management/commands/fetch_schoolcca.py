@@ -5,10 +5,10 @@ from dotenv import load_dotenv
 import os
 
 class Command(BaseCommand):
-    help = 'Fetch data from NeonDB for preschool centres'
+    help = 'Fetch data from NeonDB for school CCA'
 
     def handle(self, *args, **kwargs):
-        # Database connection parameters
+        # Load environment variables
         load_dotenv()
 
         try:
@@ -23,18 +23,18 @@ class Command(BaseCommand):
             cursor = conn.cursor()
 
             # Execute the query to fetch data
-            cursor.execute("SELECT * FROM school_cca")
+            cursor.execute("SELECT id, school_name, school_section, cca_grouping_desc, cca_generic_name, cca_customized_name FROM school_cca")
 
+            # Define the column names based on your table structure
             columns = [
-                'school_name', 'school_section', 'cca_grouping_desc', 'cca_generic_name', 'cca_customized_name'
+                'id', 'school_name', 'school_section', 'cca_grouping_desc', 'cca_generic_name', 'cca_customized_name'
             ]
 
             records = cursor.fetchall()
-
             for record in records:
                 record_dict = dict(zip(columns, record))
                 school_cca.objects.update_or_create(
-                    id=record_dict.get('id'),  # Use a unique field to identify records
+                    id=record_dict.get('id'),  # Use the id field to identify records
                     defaults={
                         'school_name': record_dict.get('school_name'),
                         'school_section': record_dict.get('school_section'),
@@ -51,4 +51,3 @@ class Command(BaseCommand):
             if conn:
                 cursor.close()
                 conn.close()
-                return record_dict
