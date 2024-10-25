@@ -3,7 +3,7 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Map from "../components/Map"; // Assuming you have a map component
-import styles from "../styles/search.module.css";
+import styles from "../styles/Search.module.css";
 import Sidebar from '../components/Sidebar';
 import "bootstrap/dist/css/bootstrap.min.css";
 
