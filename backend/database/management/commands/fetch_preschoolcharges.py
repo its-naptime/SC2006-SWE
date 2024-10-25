@@ -1,6 +1,6 @@
 import psycopg2
 from django.core.management.base import BaseCommand
-from database.models import preschool_centre
+from database.models import preschool_charges
 from dotenv import load_dotenv
 import os
 
@@ -25,24 +25,22 @@ class Command(BaseCommand):
             # Execute the query to fetch data
             cursor.execute("SELECT * FROM preschool_charges")
             records = cursor.fetchall()
-            for record in records:
-                record_dict = dict(zip(columns, record))
-                preschool_centre.objects.update_or_create(
-                    centre_code=record_dict['centre_code'],
-                    defaults={
-                        'centre_name': record_dict['centre_name'],
-                        'incidental_charges': record_dict['incidental_charges'],
-                        'frequency': record_dict['frequency'],
-                        'amount': record_dict['amount']
-                    }
-                )
 
             # Define the column names based on your table structure
             columns = [desc[0] for desc in cursor.description]
 
             for record in records:
-                record_dict = dict(zip(columns, record))
-  
+                        record_dict = dict(zip(columns, record))
+                        preschool_charges.objects.update_or_create(
+                            id=record_dict.get('id'),  # Use a unique field to identify records
+                            defaults={
+                                'centre_code': record_dict.get('centre_code'),
+                                'centre_name': record_dict.get('centre_name'),
+                                'incidental_charges': record_dict.get('incidental_charges'),
+                                'frequency': record_dict.get('frequency'),
+                                'amount': record_dict.get('amount'),
+                            }
+                        )
 
             self.stdout.write(self.style.SUCCESS('Successfully fetched and saved data'))
         except Exception as e:

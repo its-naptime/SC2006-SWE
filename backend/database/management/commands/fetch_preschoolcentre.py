@@ -35,6 +35,7 @@ class Command(BaseCommand):
                     id=record_dict.get('id'),  # Use a unique field to identify records
                     defaults={
                         'tp_code': record_dict.get('tp_code'),
+                        'centre_code': record_dict.get('centre_code'),
                         'centre_name': record_dict.get('centre_name'),
                         'organisation_code': record_dict.get('organisation_code'),
                         'organisation_description': record_dict.get('organisation_description'),

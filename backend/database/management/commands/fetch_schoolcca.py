@@ -1,6 +1,6 @@
 import psycopg2
 from django.core.management.base import BaseCommand
-from database.models import preschool_centre
+from database.models import school_cca
 from dotenv import load_dotenv
 import os
 
@@ -24,25 +24,25 @@ class Command(BaseCommand):
 
             # Execute the query to fetch data
             cursor.execute("SELECT * FROM school_cca")
+
+            columns = [
+                'school_name', 'school_section', 'cca_grouping_desc', 'cca_generic_name', 'cca_customized_name'
+            ]
+
             records = cursor.fetchall()
+
             for record in records:
                 record_dict = dict(zip(columns, record))
-                preschool_centre.objects.update_or_create(
-                    school_name=record_dict['school_name'],
+                school_cca.objects.update_or_create(
+                    id=record_dict.get('id'),  # Use a unique field to identify records
                     defaults={
-                        'school_section': record_dict['school_section'],
-                        'cca_grouping_desc': record_dict['cca_grouping_desc'],
-                        'cca_generic_name': record_dict['cca_generic_name'],
-                        'cca_customized_name': record_dict['cca_customized_name']
+                        'school_name': record_dict.get('school_name'),
+                        'school_section': record_dict.get('school_section'),
+                        'cca_grouping_desc': record_dict.get('cca_grouping_desc'),
+                        'cca_generic_name': record_dict.get('cca_generic_name'),
+                        'cca_customized_name': record_dict.get('cca_customized_name')
                     }
                 )
-
-            # Define the column names based on your table structure
-            columns = [desc[0] for desc in cursor.description]
-
-            for record in records:
-                record_dict = dict(zip(columns, record))
-  
 
             self.stdout.write(self.style.SUCCESS('Successfully fetched and saved data'))
         except Exception as e:

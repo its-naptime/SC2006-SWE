@@ -1,6 +1,6 @@
 import psycopg2
 from django.core.management.base import BaseCommand
-from database.models import HDBResaleFlat
+from database.models import HDB_data as hdb_data
 from dotenv import load_dotenv
 import os
 
@@ -23,7 +23,7 @@ class Command(BaseCommand):
             cursor = conn.cursor()
 
             # Execute the query to fetch data
-            cursor.execute("SELECT * FROM hdb_resale_flats")
+            cursor.execute("SELECT * FROM hdb_data")
             records = cursor.fetchall()
 
             # Define the column names based on your table structure
@@ -31,7 +31,7 @@ class Command(BaseCommand):
 
             for record in records:
                 record_dict = dict(zip(columns, record))
-                HDBResaleFlat.objects.update_or_create(
+                hdb_data.objects.update_or_create(
                     month=record_dict['month'],
                     town=record_dict['town'],
                     flat_type=record_dict['flat_type'],
