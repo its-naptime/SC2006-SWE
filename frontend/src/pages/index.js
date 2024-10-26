@@ -1,12 +1,64 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import styles from "../styles/Index.module.css";
 import Link from "next/link";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { checkHealth } from "../Api";
 
 const Index = () => {
+  const [connectionStatus, setConnectionStatus] = useState(null);
+
+  useEffect(() => {
+    checkHealth()
+      .then((data) => {
+        console.log("Backend health status:", data);
+        setConnectionStatus(
+          data.database === "connected" && data.status === "ok"
+            ? "success"
+            : "error",
+        );
+      })
+      .catch((error) => {
+        console.error("Health check failed:", error);
+        setConnectionStatus("error");
+      });
+  }, []);
   return (
     <div className={styles.pageContainer}>
+      {/* temporary health check, REMOVE LATER */}
+      {connectionStatus && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: 20,
+            right: 20,
+            padding: "8px 12px",
+            borderRadius: "4px",
+            fontSize: "14px",
+            backgroundColor:
+              connectionStatus === "success" ? "#4CAF50" : "#f44336",
+            color: "white",
+            opacity: 0.9,
+            zIndex: 1000,
+            transition: "opacity 0.3s",
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+          }}
+        >
+          <div
+            style={{
+              width: "8px",
+              height: "8px",
+              borderRadius: "50%",
+              backgroundColor: "white",
+            }}
+          />
+          {connectionStatus === "success"
+            ? "Connected to backend"
+            : "Backend connection failed"}
+        </div>
+      )}
       {/* Top Section: Site Name with Background */}
       <header className={styles.header}>
         <p className={`text-left ${styles.siteName}`}> KickStart </p>
@@ -52,7 +104,7 @@ const Index = () => {
           </button>
         </Link>
       </main>
-{/*
+      {/*
 
       <footer className={styles.footer}>
         <Link href="/" className={styles.navItem}>
