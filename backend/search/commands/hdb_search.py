@@ -7,8 +7,8 @@ from .base import SearchCommand
 
 
 class HDBSearchCommand(SearchCommand):
-    def __init__(self, params: Dict[str, Any]):
-        self.params = params
+    def __init__(self, params: Dict[str, Any], page: int = 1, page_size: int = 10):
+        super().__init__(params, page, page_size)  # Call parent's init
         self.queryset = HDB_data.objects.all()
         self.serializer_class = HDBDataSerializer
 
@@ -40,8 +40,9 @@ class HDBSearchCommand(SearchCommand):
             queryset = queryset.filter(flat_model__in=self.params["flat_models"])
 
         # Sorting
-        sort_by = self.params.get("sort_by", "-resale_price")  # default sort
+        sort_by = self.params.get("sort_by", "-resale_price")
         queryset = queryset.order_by(sort_by)
 
-        serializer = self.serializer_class(queryset, many=True)
-        return {"results": serializer.data, "count": queryset.count(), "type": "hdb"}
+        # Get paginated data
+        paginated_data = self.paginate_queryset(queryset)
+        return {**paginated_data, "type": "hdb"}

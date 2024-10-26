@@ -43,8 +43,8 @@ class PreschoolSearchCommand(SearchCommand):
             queryset = queryset.filter(provision_of_transport="Yes")
 
         serializer = self.serializer_class(queryset, many=True)
-        return {
-            "results": serializer.data,
-            "count": queryset.count(),
-            "type": "preschool",
-        }
+
+        # Paginate the serialized data
+        paginated_data = self.paginate_queryset(serializer.data)
+
+        return {**paginated_data, "type": "preschool"}

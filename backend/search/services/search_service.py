@@ -14,11 +14,15 @@ class SearchService:
         }
 
     def execute_search(
-        self, query_type: str, search_params: Dict[str, Any]
+        self,
+        query_type: str,
+        search_params: Dict[str, Any],
+        page: int = 1,
+        page_size: int = 10,
     ) -> Dict[str, Any]:
         command_class = self.commands.get(query_type)
         if not command_class:
             raise ValueError(f"Invalid query type: {query_type}")
 
-        command = command_class(search_params)
+        command = command_class(search_params, page=page, page_size=page_size)
         return command.execute()

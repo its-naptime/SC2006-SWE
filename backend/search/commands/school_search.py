@@ -56,4 +56,7 @@ class SchoolSearchCommand(SearchCommand):
             )
 
         serializer = self.serializer_class(queryset, many=True)
-        return {"results": serializer.data, "count": queryset.count(), "type": "school"}
+        # Paginate the serialized data
+        paginated_data = self.paginate_queryset(serializer.data)
+
+        return {**paginated_data, "type": "school"}
