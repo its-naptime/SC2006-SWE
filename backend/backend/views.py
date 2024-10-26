@@ -1,22 +1,30 @@
 from django.db import connections
 from django.db.utils import OperationalError
-from django.http import JsonResponse
+from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 
-@api_view(["GET"])
+@api_view(["GET", "OPTIONS"])  # Add OPTIONS to allowed methods
 @permission_classes([AllowAny])
 def health_check(request):
     """
     Basic health check endpoint that also verifies database connection
     """
+    # Handle OPTIONS request for CORS preflight
+    if request.method == "OPTIONS":
+        response = HttpResponse()
+        response["Access-Control-Allow-Origin"] = "http://localhost:3000"
+        response["Access-Control-Allow-Methods"] = "GET, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        response["Access-Control-Allow-Credentials"] = "true"
+        return response
+
     # Check database connection
     db_healthy = True
     try:
-        # Attempt to connect to the database
         connections["default"].cursor()
     except OperationalError:
         db_healthy = False
@@ -30,4 +38,10 @@ def health_check(request):
     status_code = (
         status.HTTP_200_OK if db_healthy else status.HTTP_503_SERVICE_UNAVAILABLE
     )
-    return Response(health_status, status=status_code)
+
+    # Create response with CORS headers
+    response = Response(health_status, status=status_code)
+    response["Access-Control-Allow-Origin"] = "http://localhost:3000"
+    response["Access-Control-Allow-Credentials"] = "true"
+
+    return response
