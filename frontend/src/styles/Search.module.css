@@ -1,0 +1,96 @@
+/* styles/Home.module.css */
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .searchBar {
+    display: flex;
+    align-items: left;
+    width: 50vw;
+  }
+  
+  .input {
+    margin: 0 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
+  .searchButton {
+    padding: 0.5rem;
+    background-color: #0070f3;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .user {
+    display: flex;
+    align-items: center;
+  }
+  
+  .userName {
+    margin-right: 1rem;
+    font-weight: bold;
+  }
+  
+  .phoneNumber {
+    color: #0070f3;
+  }
+  
+  .main {
+    display: flex;
+    flex: 1;
+  }
+  
+  .housingList {
+    flex: 2;
+    padding: 2rem;
+  }
+  
+  .propertyList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .propertyCard {
+    display: flex;
+    border: 1px solid #ddd;
+    padding: 1rem;
+    border-radius: 4px;
+    background-color: #fff;
+    overflow: hidden;
+  }
+  
+  .propertyImage {
+    margin-right: 1rem;
+    object-fit: cover;
+  }
+  
+  .propertyDetails {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .mapSection {
+    flex: 3;
+    height: 100%;
+    background-color: #f5f5f5;
+  }
+  .sidebar {
+    width: 5vw;
+    height: 100vh;
+  }

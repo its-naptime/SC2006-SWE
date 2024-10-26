@@ -1,8 +1,9 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Link, Routes } from "react-router-dom";
 import './App.css';
-import Home from './pages/Home';  // Updated path to Home.js
-import About from './pages/About';  // Updated path to About.js
+import Index from './pages/index';  // Ensure the case matches
+import Search from './pages/search'; // Ensure the case matches
+import 'bootstrap/dist/css/bootstrap.min.css'; // Add this import
 
 function App() {
   return (
@@ -11,17 +12,17 @@ function App() {
         <nav>
           <ul>
             <li>
-              <Link to="/">Home</Link>
+              <Link to="/">Index</Link>
             </li>
             <li>
-              <Link to="/about">About</Link>
+              <Link to="/search">Search</Link>
             </li>
           </ul>
         </nav>
 
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
+          <Route path="/" element={<Index />} />
+          <Route path="/search" element={<Search />} />
         </Routes>
       </div>
     </Router>
