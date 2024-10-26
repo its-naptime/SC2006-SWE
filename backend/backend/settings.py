@@ -11,10 +11,10 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
-from datetime import timedelta
 
 # Load environment vars
 load_dotenv()
@@ -38,9 +38,6 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated",
-    ],
 }
 
 SIMPLE_JWT = {
@@ -50,16 +47,18 @@ SIMPLE_JWT = {
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'corsheaders',
-    'rest_framework',
-    'rest_framework_simplejwt',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "corsheaders",
+    "rest_framework",
+    "rest_framework_simplejwt",
     "database",
+    "api",
+    "search",
 ]
 
 MIDDLEWARE = [
@@ -82,7 +81,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     # Add any other allowed origins here
 ]
-#CORS_ALLOWS_CREDENTIALS = True
+# CORS_ALLOWS_CREDENTIALS = True
 
 
 ROOT_URLCONF = "backend.urls"
