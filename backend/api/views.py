@@ -32,4 +32,4 @@ class NoteDelete(generics.destroyAPIView):
 class createUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    Permission_classes = [AllowAny]
+    permission_classes = [AllowAny]
