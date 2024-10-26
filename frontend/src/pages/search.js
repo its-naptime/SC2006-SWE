@@ -4,13 +4,13 @@ import Link from "next/link";
 import Image from "next/image";
 import Map from "../components/Map"; // Assuming you have a map component
 import styles from "../styles/Search.module.css";
-import Sidebar from '../components/Sidebar';
+import Sidebar from "../components/Sidebar";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const Search = () => {
   return (
     <div className={styles.container}>
-     { /*<Sidebar/>*/}
+      {/*<Sidebar/>*/}
       {/* Header Section */}
       <header className={styles.header}>
         <div className={styles.searchBar}>
@@ -44,12 +44,12 @@ const Search = () => {
             +1 (800) 657 8976
           </a>
           <Image
-              src="/images/jon.jpg"
-              alt="Search"
-              width={50}
-              height={50}
-              className="mx-2 rounded-5"
-            />
+            src="/images/jon.jpg"
+            alt="Search"
+            width={50}
+            height={50}
+            className="mx-2 rounded-5"
+          />
           <span className={`mx-2 ${styles.userName}`}>Jon Doe</span>
         </div>
       </header>
@@ -60,9 +60,20 @@ const Search = () => {
         <section className={styles.housingList}>
           <h1>Housing near Jurong West</h1>
           <div className={styles.sortOptions}>
-            <div className={'btn btn-primary rounded-pill col-2 mx-2 my-3 z-0'} disabled>Sort By:</div>
-            <button className="btn btn-outline-primary rounded-pill col-3 mx-2 my-3">Price</button>
-            <button className={'btn btn-outline-primary rounded-pill col-3 mx-2 my-3'}>Room Size</button>
+            <div
+              className={"btn btn-primary rounded-pill col-2 mx-2 my-3 z-0"}
+              disabled
+            >
+              Sort By:
+            </div>
+            <button className="btn btn-outline-primary rounded-pill col-3 mx-2 my-3">
+              Price
+            </button>
+            <button
+              className={"btn btn-outline-primary rounded-pill col-3 mx-2 my-3"}
+            >
+              Room Size
+            </button>
           </div>
 
           {/* List of Properties */}

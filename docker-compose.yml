@@ -18,6 +18,13 @@ services:
     build: ./frontend
     ports:
       - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
 
   db:
     image: postgres:13
@@ -30,3 +37,4 @@ services:
 
 volumes:
   postgres_data:
+
