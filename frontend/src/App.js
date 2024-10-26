@@ -1,9 +1,23 @@
 import React from "react";
-import { BrowserRouter as Router, Route, Link, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Link, Routes, Navigate } from "react-router-dom";
 import './App.css';
-import Index from './pages/index';  // Ensure the case matches
-import Search from './pages/search'; // Ensure the case matches
-import 'bootstrap/dist/css/bootstrap.min.css'; // Add this import
+import Home from './pages/home';
+import Login from "./pages/Login"; 
+import Register from "./pages/Register"; 
+import NotFound from "./pages/NotFound"; 
+import About from './pages/about'; 
+import Search from './pages/search';
+import 'bootstrap/dist/css/bootstrap.min.css'; 
+
+function Logout() {
+  localStorage.clear()
+  return <Navigate to="/login" />
+}
+
+function RegisterAndLogout() {
+  localStorage.clear()
+  return <Register />
+}
 
 function App() {
   return (
@@ -11,18 +25,21 @@ function App() {
       <div className="App">
         <nav>
           <ul>
-            <li>
-              <Link to="/">Index</Link>
-            </li>
-            <li>
-              <Link to="/search">Search</Link>
-            </li>
+            <li><Link to="/">Home</Link></li>
+            <li><Link to="/about">About</Link></li>
+            <li><Link to="/search">Search</Link></li>
+            <li><Link to="/login">Login</Link></li>
+            <li><Link to="/register">Register</Link></li>
           </ul>
         </nav>
 
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/about" element={<About />} />
           <Route path="/search" element={<Search />} />
+          <Route path="*" element={<NotFound />} /> {/* Catch all unmatched routes */}
         </Routes>
       </div>
     </Router>
