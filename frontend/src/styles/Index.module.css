@@ -91,6 +91,6 @@
   width: 100%; /* Or a fixed width like 600px */
   height: auto; /* Let the height adjust automatically based on the width */
   object-fit: cover; /* Ensure the image covers the area without stretching */
-  max-height: 400px; /* You can limit the maximum height of the image */
+  max-height: 500px; /* You can limit the maximum height of the image */
   border-radius: 10px; /* Optional: To make the image corners rounded */
 }

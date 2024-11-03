@@ -6,6 +6,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 //import NavList from "../components/NavList";
 import Sidebar from "../components/Sidebar";
 import { checkHealth } from "../Api";
+import Layout from "../components/Layout";
 
 const Index = () => {
   const [connectionStatus, setConnectionStatus] = useState(null);
@@ -27,8 +28,8 @@ const Index = () => {
   }, []);
   return (
     <div className={styles.pageContainer}>
-            {/*<NavList/>*/}
-            <Sidebar/>
+      <Layout>
+      </Layout>
       {/* temporary health check, REMOVE LATER */}
       {connectionStatus && (
         <div

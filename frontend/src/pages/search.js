@@ -6,11 +6,13 @@ import Map from "../components/Map"; // Assuming you have a map component
 import styles from "../styles/Search.module.css";
 import Sidebar from "../components/Sidebar";
 import "bootstrap/dist/css/bootstrap.min.css";
+import Layout from "./components/Layout";
 
 const Search = () => {
   return (
     <div className={styles.container}>
-      <Sidebar/>
+      <Layout/>
+      {/*<Sidebar/>*/}
       {/* Header Section */}
       <header className={styles.header}>
         <div className={styles.searchBar}>
