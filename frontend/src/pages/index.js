@@ -3,6 +3,8 @@ import Image from "next/image";
 import styles from "../styles/Index.module.css";
 import Link from "next/link";
 import "bootstrap/dist/css/bootstrap.min.css";
+//import NavList from "../components/NavList";
+import Sidebar from "../components/Sidebar";
 import { checkHealth } from "../Api";
 
 const Index = () => {
@@ -25,6 +27,8 @@ const Index = () => {
   }, []);
   return (
     <div className={styles.pageContainer}>
+            {/*<NavList/>*/}
+            <Sidebar/>
       {/* temporary health check, REMOVE LATER */}
       {connectionStatus && (
         <div
@@ -60,9 +64,9 @@ const Index = () => {
         </div>
       )}
       {/* Top Section: Site Name with Background */}
-      <header className={styles.header}>
+      {/*<header className={styles.header}>
         <p className={`text-left ${styles.siteName}`}> KickStart </p>
-      </header>
+      </header>*/}
 
       <img
         src="/images/home.jpg" // Path to your image

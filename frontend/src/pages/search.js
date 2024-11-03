@@ -10,7 +10,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 const Search = () => {
   return (
     <div className={styles.container}>
-      {/*<Sidebar/>*/}
+      <Sidebar/>
       {/* Header Section */}
       <header className={styles.header}>
         <div className={styles.searchBar}>

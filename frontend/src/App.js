@@ -7,6 +7,7 @@ import NotFound from "./pages/NotFound";
 import About from "./pages/about";
 import Search from "./pages/search";
 import "bootstrap/dist/css/bootstrap.min.css";
+import Sidebar from "./components/Sidebar";
 
 function Logout() {
   localStorage.clear();
@@ -21,6 +22,7 @@ function RegisterAndLogout() {
 function App() {
   return (
     <div className="App">
+      <Sidebar/>
       <nav>
         <ul>
           <li>
