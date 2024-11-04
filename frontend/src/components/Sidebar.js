@@ -1,35 +1,35 @@
-import React, { useState } from 'react';
-import styles from '../styles/Sidebar.module.css';
+import "bootstrap/dist/css/bootstrap.min.css";
+import Container from 'react-bootstrap/Container';
+import Nav from 'react-bootstrap/Nav';
+import Navbar from 'react-bootstrap/Navbar';
+import NavDropdown from 'react-bootstrap/NavDropdown';
 
-const Sidebar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen);
-  };
-
+function Sidebar() {
   return (
-    <div className={styles.sidebarContainer}>
-      {/* Sidebar */}
-      <div className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
-        {/* Close button inside the sidebar */}
-        <button onClick={toggleSidebar} className={styles.closeBtn}>
-          x
-        </button>
-        <nav className={styles.sidebarContent}>
-          <a href="#home">Home</a>
-          <a href="#services">Services</a>
-          <a href="#clients">Clients</a>
-          <a href="#contact">Contact</a>
-        </nav>
-      </div>
-
-      {/* Toggle button (always visible) */}
-      <button onClick={toggleSidebar} className={styles.toggleBtn}>
-        {isOpen ? 'x' : '☰'}
-      </button>
-    </div>
+    <Navbar expand="lg" className="bg-body-tertiary">
+      <Container>
+        <Navbar.Brand href="home">KickStart</Navbar.Brand>
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Collapse id="basic-navbar-nav">
+          <Nav className="me-auto">
+            <Nav.Link href="/">Home</Nav.Link>
+            <Nav.Link href="/search">Search</Nav.Link>
+            <NavDropdown title="Dropdown" id="basic-nav-dropdown">
+              <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
+              <NavDropdown.Item href="#action/3.2">
+                Another action
+              </NavDropdown.Item>
+              <NavDropdown.Item href="#action/3.3">Something</NavDropdown.Item>
+              <NavDropdown.Divider />
+              <NavDropdown.Item href="#action/3.4">
+                Separated link
+              </NavDropdown.Item>
+            </NavDropdown>
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
   );
-};
+}
 
 export default Sidebar;

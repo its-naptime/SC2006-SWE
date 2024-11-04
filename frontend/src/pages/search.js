@@ -4,12 +4,13 @@ import Link from "next/link";
 import Image from "next/image";
 import Map from "../components/Map"; // Assuming you have a map component
 import styles from "../styles/Search.module.css";
-import Sidebar from "../components/Sidebar";
 import "bootstrap/dist/css/bootstrap.min.css";
+import Layout from "../components/Layout";
 
 const Search = () => {
   return (
     <div className={styles.container}>
+      <Layout/>
       {/*<Sidebar/>*/}
       {/* Header Section */}
       <header className={styles.header}>
@@ -38,19 +39,6 @@ const Search = () => {
               height={24}
             />
           </button>
-        </div>
-        <div className={styles.user}>
-          <a href="tel:+18006578976" className={`mx-2 ${styles.phoneNumber}`}>
-            +1 (800) 657 8976
-          </a>
-          <Image
-            src="/images/jon.jpg"
-            alt="Search"
-            width={50}
-            height={50}
-            className="mx-2 rounded-5"
-          />
-          <span className={`mx-2 ${styles.userName}`}>Jon Doe</span>
         </div>
       </header>
 
