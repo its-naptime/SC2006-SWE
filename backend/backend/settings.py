@@ -74,7 +74,8 @@ MIDDLEWARE = [
 
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = (
-    False  # Set to True to allow all origins (not recommended for production)
+    True
+    #False  # Set to True to allow all origins (not recommended for production)
 )
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Allow your frontend URL
