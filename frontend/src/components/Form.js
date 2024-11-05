@@ -1,3 +1,4 @@
+import { ACCESS_TOKEN, REFRESH_TOKEN} from "react-router-dom"
 import { useState } from "react";
 import { useRouter } from "next/router";
 import api from "../Api";
@@ -8,11 +9,11 @@ function Form({ activeTab, setActiveTab }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [registerDetails, setRegisterDetails] = useState({
-    name: "",
+    //name: "",
     username: "",
     email: "",
     password: "",
-    confirmPassword: "",
+    //confirmPassword: "",
   });
   const router = useRouter();
 
@@ -38,8 +39,20 @@ function Form({ activeTab, setActiveTab }) {
   const handleRegisterSubmit = async (e) => {
     setLoading(true);
     e.preventDefault();
+
+    // Check if passwords match
+    if (registerDetails.password != registerDetails.confirmPassword) {
+      alert("Passwords do not match");
+      setLoading(false);
+      return;
+    }
+
     try {
-      await api.post("/api/user/register/", registerDetails);
+      await api.post("/api/user/register/", {
+        username: registerDetails.username,
+        email: registerDetails.email,
+        password: registerDetails.password,
+      });
       alert("Registration successful");
       setActiveTab("login");
     } catch (error) {
