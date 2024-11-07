@@ -1,6 +1,6 @@
-import { ACCESS_TOKEN, REFRESH_TOKEN} from "react-router-dom"
 import { useState } from "react";
 import { useRouter } from "next/router";
+import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
 import api from "../Api";
 import LoadingIndicator from "./LoadingIndicator"; // Ensure this path is correct
 
@@ -25,9 +25,9 @@ function Form({ activeTab, setActiveTab }) {
     setLoading(true);
     e.preventDefault();
     try {
-      const res = await api.post("/api/token/", { username, password });
-      localStorage.setItem("ACCESS_TOKEN", res.data.access);
-      localStorage.setItem("REFRESH_TOKEN", res.data.refresh);
+      const res = await api.post("/api/token/", { username: username, password: password });
+      localStorage.setItem(ACCESS_TOKEN, res.data.access);
+      localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
       router.push("/");
     } catch (error) {
       alert("Login failed: " + error.message);
