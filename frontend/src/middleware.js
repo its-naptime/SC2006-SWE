@@ -22,5 +22,5 @@ export function middleware(request) {
 }
 
 export const config = {
-  matcher: protectedPaths, // Only run middleware on protected paths
+  matcher: ["/search", "/about"], // Only run middleware on protected paths
 };
