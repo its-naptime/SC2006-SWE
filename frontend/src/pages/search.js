@@ -44,15 +44,26 @@ const Search = () => {
     setSelectedProperty(null);
   };
 
+  const moveToSpecificLocation = () => {
+    const lat = 1.3691149;
+    const lng = 103.8454342;
+
+    if (mapRef.current) {
+      mapRef.current.panTo({ lat, lng });
+      mapRef.current.setZoom(15); // Adjust the zoom level as needed
+    } else {
+      console.error("Map instance not available");
+    }
+  };
+
   const moveToTown = async (townName) => {
     try {
-      const apiKey = "AIzaSyAyzmdHfqi4yBCQJmX1OT3rkXaam6Q5X7g";
-      const formattedTownName = `${townName}, Singapore`; // Add context to the town name
+      const apiKey = "AIzaSyDMr6Hck0M4zUmc-lwWcGDE1pdze6DU_sI"; // Replace with your API key
       const response = await axios.get(
         `https://maps.googleapis.com/maps/api/geocode/json`,
         {
           params: {
-            address: formattedTownName,
+            address: `${townName}, Singapore`,
             key: apiKey,
           },
         }
@@ -60,14 +71,16 @@ const Search = () => {
   
       if (response.data.results.length > 0) {
         const { lat, lng } = response.data.results[0].geometry.location;
-        console.log(`Coordinates found for ${formattedTownName}: ${lat}, ${lng}`);
+        console.log(`Coordinates found for ${townName}: ${lat}, ${lng}`);
         if (mapRef.current) {
           mapRef.current.panTo({ lat, lng });
           mapRef.current.setZoom(15); // Adjust the zoom level as needed
+        } else {
+          console.error("Map instance not available");
         }
       } else {
-        console.error(`Location not found for the given town name: ${formattedTownName}`);
-        alert(`Location not found for the given town name: ${formattedTownName}`);
+        console.error(`Location not found for the given town name: ${townName}`);
+        alert(`Location not found for the given town name: ${townName}`);
       }
     } catch (error) {
       console.error("Error fetching location data:", error);
@@ -168,7 +181,7 @@ const Search = () => {
                   onClick={() => moveToTown(property.street_name)}
                   style={{ position: 'absolute', bottom: '10px', right: '10px' }}
                 >
-                  Move Map to {property.town}
+                  Move Map to {property.street_name}
                 </Button>
               </div>
             ))}
@@ -190,7 +203,7 @@ const Search = () => {
         </section>
 
         <section className={styles.mapSection}>
-          <Map ref={mapRef} googleMapsApiKey="AIzaSyAyzmdHfqi4yBCQJmX1OT3rkXaam6Q5X7g" />
+          <Map ref={mapRef} googleMapsApiKey="AIzaSyDMr6Hck0M4zUmc-lwWcGDE1pdze6DU_sI" />
         </section>
       </main>
 
@@ -209,34 +222,34 @@ const Search = () => {
                 className="img-fluid mb-3"
               />
               <p>
-                <strong>town:</strong> {selectedProperty.town}
+                <strong>Town:</strong> {selectedProperty.town}
               </p>
               <p>
-                <strong>flat_type:</strong> {selectedProperty.flat_type}
+                <strong>Flat_type:</strong> {selectedProperty.flat_type}
               </p>
               <p>
-                <strong>street_name:</strong> {selectedProperty.street_name}
+                <strong>Street_name:</strong> {selectedProperty.street_name}
               </p>
               <p>
-                <strong>storey_range:</strong> {selectedProperty.storey_range}
+                <strong>Storey_range:</strong> {selectedProperty.storey_range}
               </p>
               <p>
-                <strong>floor_area_sqm:</strong>{" "}
+                <strong>Floor_area_sqm:</strong>{" "}
                 {selectedProperty.floor_area_sqm}
               </p>
               <p>
-                <strong>flat_model:</strong> {selectedProperty.flat_model}
+                <strong>Flat_model:</strong> {selectedProperty.flat_model}
               </p>
               <p>
-                <strong>lease_commence_date:</strong>{" "}
+                <strong>Lease_commence_date:</strong>{" "}
                 {selectedProperty.lease_commence_date}
               </p>
               <p>
-                <strong>remaining_lease:</strong>{" "}
+                <strong>Remaining_lease:</strong>{" "}
                 {selectedProperty.remaining_lease}
               </p>
               <p>
-                <strong>resale_price:</strong> {selectedProperty.resale_price}
+                <strong>Resale_price:</strong> {selectedProperty.resale_price}
               </p>
               <p>{selectedProperty.description}</p>
             </>
