@@ -43,3 +43,16 @@ class PreschoolChargesListCreate(generics.ListCreateAPIView):
 class PreschoolChargesDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = models.preschool_charges.objects.all()
     serializer_class = serializers.PreschoolChargesSerializer
+
+class UserSchoolSearchListCreate(generics.ListCreateAPIView):
+    queryset = models.UserSchoolSearch.objects.all()
+    serializer_class = serializers.UserSchoolSearchSerializer
+
+class UserPreschoolSearchListCreate(generics.ListCreateAPIView):
+    queryset = models.UserPreschoolSearch.objects.all()
+    serializer_class = serializers.UserPreschoolSearchSerializer
+
+class UserHDBSearchListCreate(generics.ListCreateAPIView):
+    queryset = models.UserHDBSearch.objects.all()
+    serializer_class = serializers.UserHDBSearchSerializer
+
