@@ -26,3 +26,11 @@ class SearchService:
 
         command = command_class(search_params, page=page, page_size=page_size)
         return command.execute()
+    def get_perimeter_data(self):
+        # Replace with actual logic to calculate and return perimeter data
+        perimeter_data = [
+            {'id': 1, 'perimeter': 100},
+            {'id': 2, 'perimeter': 150},
+            # Add more sample or calculated data
+        ]
+        return perimeter_data

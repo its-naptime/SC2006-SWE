@@ -94,3 +94,8 @@
     width: 5vw;
     height: 100vh;
   }
+  .mapSection {
+    height: 100vh; /* Full viewport height */
+    width: 100%; /* Full width */
+  }
+  

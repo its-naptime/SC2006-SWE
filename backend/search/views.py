@@ -65,3 +65,16 @@ class SearchListCreate(generics.ListCreateAPIView):
                 {"error": "An unexpected error occurred"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+
+class GetPerimeterView(generics.GenericAPIView):
+    """View to handle requests for perimeter data."""
+
+    def get(self, request, *args, **kwargs):
+        try:
+            # Example logic to fetch perimeter data
+            service = SearchService()
+            perimeter_data = service.get_perimeter_data()  # Ensure this method is in your service
+            return Response({'perimeters': perimeter_data})
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
