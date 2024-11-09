@@ -1,96 +1,269 @@
-/* styles/Home.module.css */
-
 .container {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-  }
-  
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    background-color: #f5f5f5;
-    border-bottom: 1px solid #ddd;
-  }
-  
-  .searchBar {
-    display: flex;
-    align-items: left;
-    width: 50vw;
-  }
-  
-  .input {
-    margin: 0 0.5rem;
-    padding: 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-  }
-  
-  .searchButton {
-    padding: 0.5rem;
-    background-color: #0070f3;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  
-  .user {
-    display: flex;
-    align-items: center;
-  }
-  
-  .userName {
-    margin-right: 1rem;
-    font-weight: bold;
-  }
-  
-  .phoneNumber {
-    color: #0070f3;
-  }
-  
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  padding: 1rem;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.searchBar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.input {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.filtersPanel {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 1rem;
+}
+
+.main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  padding: 2rem;
+  flex: 1;
+}
+
+.housingList {
+  overflow-y: auto;
+  padding-right: 1rem;
+}
+
+.propertyList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.propertyCard {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.2s;
+}
+
+.propertyCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.propertyImage {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.propertyDetails {
+  padding: 1rem;
+}
+
+.propertyDetails h4 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.propertyDetails p {
+  margin: 0.25rem 0;
+  color: #666;
+}
+
+.mapSection {
+  position: sticky;
+  top: 5rem;
+  height: calc(100vh - 7rem);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.pagination {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 2rem;
+  padding: 1rem 0;
+}
+
+.sortOptions {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+/* Filter Styles */
+.filterGroup {
+  margin-bottom: 1rem;
+}
+
+.filterLabel {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.filterInput {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.filterSelect {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background-color: white;
+}
+
+.filterRange {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.filterRange input {
+  flex: 1;
+}
+
+/* Modal Styles */
+.modal {
+  max-width: 90vw;
+  width: 800px;
+}
+
+.modalImage {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.modalDetails {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.modalDetail {
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
   .main {
-    display: flex;
-    flex: 1;
+    grid-template-columns: 1fr;
   }
-  
-  .housingList {
-    flex: 2;
-    padding: 2rem;
-  }
-  
-  .propertyList {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .propertyCard {
-    display: flex;
-    border: 1px solid #ddd;
-    padding: 1rem;
-    border-radius: 4px;
-    background-color: #fff;
-    overflow: hidden;
-  }
-  
-  .propertyImage {
-    margin-right: 1rem;
-    object-fit: cover;
-  }
-  
-  .propertyDetails {
-    display: flex;
-    flex-direction: column;
-  }
-  
+
   .mapSection {
-    flex: 3;
-    height: 100%;
-    background-color: #f5f5f5;
+    height: 400px;
+    position: relative;
+    top: 0;
   }
-  .sidebar {
-    width: 5vw;
-    height: 100vh;
+}
+
+@media (max-width: 768px) {
+  .searchBar {
+    flex-direction: column;
+    align-items: stretch;
   }
+
+  .filterRange {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .modalDetails {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Filter Tags */
+.filterTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.filterTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background: #e9ecef;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  color: #495057;
+}
+
+.filterTag button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+}
+
+.filterTag button:hover {
+  color: #dc3545;
+}
+
+/* Loading State */
+.loadingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
