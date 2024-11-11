@@ -531,7 +531,8 @@ const Search = () => {
 
         {/* Map Section */}
         <section className={styles.mapSection}>
-          <Map ref={mapRef} googleMapsApiKey={'AIzaSyDMr6Hck0M4zUmc-lwWcGDE1pdze6DU_sI'} initialLocation={currentMapLocation}/>
+          <Map ref={mapRef} googleMapsApiKey={'AIzaSyDMr6Hck0M4zUmc-lwWcGDE1pdze6DU_sI'} initialLocation={currentMapLocation}
+  properties={properties} />
         </section>
       </main>
 
