@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ search.school_name }} - Details</title>
+</head>
+<body>
+    <h1>{{ search.school_name }}</h1>
+    <p><strong>Search Query:</strong> {{ search.search_query }}</p>
+    <p><strong>URL Address:</strong> <a href="{{ search.url_address }}">{{ search.url_address }}</a></p>
+    <p><strong>Address:</strong> {{ search.address }}</p>
+    <p><strong>Postal Code:</strong> {{ search.postal_code }}</p>
+    <p><strong>Telephone No:</strong> {{ search.telephone_no }}</p>
+    <p><strong>Email Address:</strong> {{ search.email_address }}</p>
+    <p><strong>MRT Description:</strong> {{ search.mrt_desc }}</p>
+    <p><strong>Bus Description:</strong> {{ search.bus_desc }}</p>
+    <p><strong>Principal Name:</strong> {{ search.principal_name }}</p>
+    <p><strong>First VP Name:</strong> {{ search.first_vp_name }}</p>
+    <p><strong>Second VP Name:</strong> {{ search.second_vp_name }}</p>
+    <p><strong>Third VP Name:</strong> {{ search.third_vp_name }}</p>
+    <p><strong>Fourth VP Name:</strong> {{ search.fourth_vp_name }}</p>
+    <p><strong>Fifth VP Name:</strong> {{ search.fifth_vp_name }}</p>
+    <p><strong>Sixth VP Name:</strong> {{ search.sixth_vp_name }}</p>
+    <p><strong>DGP Code:</strong> {{ search.dgp_code }}</p>
+    <p><strong>Zone Code:</strong> {{ search.zone_code }}</p>
+    <p><strong>Type Code:</strong> {{ search.type_code }}</p>
+    <p><strong>Nature Code:</strong> {{ search.nature_code }}</p>
+    <p><strong>Session Code:</strong> {{ search.session_code }}</p>
+    <p><strong>Main Level Code:</strong> {{ search.mainlevel_code }}</p>
+    <p><strong>SAP Indicator:</strong> {{ search.sap_ind }}</p>
+    <p><strong>Autonomous Indicator:</strong> {{ search.autonomous_ind }}</p>
+    <p><strong>Gifted Indicator:</strong> {{ search.gifted_ind }}</p>
+    <p><strong>IP Indicator:</strong> {{ search.ip_ind }}</p>
+    <p><strong>Mother Tongue 1 Code:</strong> {{ search.mothertongue1_code }}</p>
+    <p><strong>Mother Tongue 2 Code:</strong> {{ search.mothertongue2_code }}</p>
+    <p><strong>Mother Tongue 3 Code:</strong> {{ search.mothertongue3_code }}</p>
+    <a href="{% url 'user_school_search_list' %}">Back to List</a>
+</body>
+</html>

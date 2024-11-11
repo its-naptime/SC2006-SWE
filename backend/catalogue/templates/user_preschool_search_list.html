@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Preschool Searches</title>
+</head>
+<body>
+    <h1>User Preschool Searches</h1>
+    <ul>
+        {% for search in searches %}
+            <li>
+                <a href="{% url 'user_preschool_search_detail' search.pk %}">{{ search.centre_name }}</a>
+                <form action="{% url 'user_preschool_search_delete' search.pk %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit">Delete</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'user_preschool_search_create' %}">Create New Search</a>
+</body>
+</html>
