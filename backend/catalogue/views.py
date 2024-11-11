@@ -35,6 +35,7 @@ class UserHDBSearchView(viewsets.ModelViewSet):
         return UserHDBSearch.objects.filter(user=self.request.user)
     
 # List View
+
 @login_required
 def user_school_search_list(request):
     searches = UserSchoolSearch.objects.filter(user=request.user)

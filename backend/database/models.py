@@ -277,3 +277,29 @@ class UserSchoolSearch(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.search_query} - {self.school_name}"
+    
+
+class Place(models.Model):
+    place_id = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
+    rating = models.DecimalField(max_digits=3, decimal_places=1)
+    status = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
+    
+class Review(models.Model):
+    place = models.ForeignKey(Place, related_name='reviews', on_delete=models.CASCADE)
+    author_name = models.CharField(max_length=255)
+    author_url = models.URLField()
+    language = models.CharField(max_length=10)
+    original_language = models.CharField(max_length=10)
+    profile_photo_url = models.URLField()
+    rating = models.IntegerField()
+    relative_time_description = models.CharField(max_length=255)
+    text = models.TextField()
+    time = models.BigIntegerField()
+    translated = models.BooleanField()
+
+    def __str__(self):
+        return f"{self.author_name} - {self.place.name}"
