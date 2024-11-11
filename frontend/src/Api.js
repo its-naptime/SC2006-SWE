@@ -5,10 +5,9 @@ const backend = "http://localhost:8000";
 // Create the axios instance first
 const api = axios.create({
   baseURL: backend
-  // withCredentials: true,
-  // headers: {
-  //   "Content-Type": "application/json",
-  // },
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 // Then add the interceptors

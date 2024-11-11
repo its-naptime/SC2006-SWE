@@ -75,7 +75,8 @@ MIDDLEWARE = [
 
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = (
-    False  # Set to True to allow all origins (not recommended for production)
+    True
+    #False  # Set to True to allow all origins (not recommended for production)
 )
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Allow your frontend URL
@@ -162,6 +163,7 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -169,3 +171,10 @@ CACHES = {
 }
 
 GOOGLE_MAPS_API_KEY = os.getenv("NEXT_PUBLIC_API_KEY")
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')  # Email address from environment variable
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')  # Email password or app password from environment variable
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')  # Default email sender
