@@ -32,4 +32,5 @@ urlpatterns = [
     path("", include("database.urls")),
     path("api/health/", views.health_check, name="health_check"),
     path("api/search/", include("search.urls")),
+    path("api/catalogue/", include("catalogue.urls")),
 ]

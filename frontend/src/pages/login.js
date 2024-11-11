@@ -1,9 +1,8 @@
 import React from "react";
 import Form from "../components/Form";
 
-function Login() {
-  return <Form route="/api/token/" method="login" />;
+function Login({ switchToRegister }) {
+  return <Form route="/api/token/" method="login" switchToRegister={switchToRegister} />;
 }
 
 export default Login;
-

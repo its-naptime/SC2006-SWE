@@ -30,3 +30,23 @@ class PreschoolChargesSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.preschool_charges
         fields = '__all__'
+class UserSchoolSearchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.UserSchoolSearch
+        fields = '__all__'
+class UserPreschoolSearchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.UserPreschoolSearch
+        fields = '__all__'
+class UserHDBSearchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.UserHDBSearch
+        fields = '__all__'
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Review
+        fields = '__all__'
+class PlaceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Place
+        fields = '__all__'
