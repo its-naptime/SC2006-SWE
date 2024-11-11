@@ -1,10 +1,11 @@
 import React, { useRef, useImperativeHandle, forwardRef, useEffect, useState } from 'react';
-import { LoadScript, GoogleMap, Marker } from '@react-google-maps/api';
+import { LoadScript, GoogleMap, Marker, InfoWindow } from '@react-google-maps/api';
 import axios from 'axios';
 
 const Map = forwardRef(({ googleMapsApiKey, initialLocation, properties }, ref) => {
   const mapRefInternal = useRef(null);
   const [markers, setMarkers] = useState([]);
+  const [selectedMarker, setSelectedMarker] = useState(null);
 
   const onLoad = (map) => {
     mapRefInternal.current = map;
@@ -34,6 +35,7 @@ const Map = forwardRef(({ googleMapsApiKey, initialLocation, properties }, ref) 
             return {
               position: { lat, lng },
               title: property.street_name,
+              property, // Pass the property object for additional info
             };
           } else {
             console.error(`Location not found for street: ${property.street_name}`);
@@ -84,8 +86,28 @@ const Map = forwardRef(({ googleMapsApiKey, initialLocation, properties }, ref) 
             key={index}
             position={marker.position}
             title={marker.title}
+            onClick={() => setSelectedMarker(marker)} // Set marker on click
           />
         ))}
+
+        {selectedMarker && (
+          <InfoWindow
+            position={selectedMarker.position}
+            onCloseClick={() => setSelectedMarker(null)} // Close the info window
+          >
+            <div>
+              <h5>{selectedMarker.property.street_name}</h5>
+              <p><strong>Price:</strong> ${selectedMarker.property.resale_price?.toLocaleString()}</p>
+              <p><strong>Type:</strong> {selectedMarker.property.flat_type}</p>
+              <p><strong>Town:</strong> {selectedMarker.property.town}</p>
+              <img
+                src={selectedMarker.property.image || '/images/property.jpg'}
+                alt={selectedMarker.property.street_name}
+                style={{ width: 'auto', height: 'auto' }}
+              />
+            </div>
+          </InfoWindow>
+        )}
       </GoogleMap>
     </LoadScript>
   );

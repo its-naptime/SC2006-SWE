@@ -11,6 +11,7 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { X } from 'lucide-react';
+import { Marker, InfoWindow } from '@react-google-maps/api';
 
 const ITEMS_PER_PAGE = 8;
 
@@ -39,7 +40,17 @@ const Search = () => {
     towns: [],
     sortBy: "price_desc"
   });
-
+  const handleMarkerClick = (propertyId) => {
+    const propertyElement = document.getElementById(`property-${propertyId}`);
+    if (propertyElement) {
+      console.log(`Property card with ID ${propertyId} clicked`); 
+      propertyElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      propertyElement.classList.add('highlight'); // Optional: Add a highlight class to visually indicate
+      setTimeout(() => {
+        propertyElement.classList.remove('highlight'); // Remove highlight after a delay
+      }, 2000);
+    }
+  };
   // Loading state for individual actions
   const [isSearching, setIsSearching] = useState(false);
   const [isMovingMap, setIsMovingMap] = useState(false);
@@ -66,12 +77,11 @@ const Search = () => {
     }));
   }, [router.isReady]);
 
-  // Fetch properties when search params change
+
   useEffect(() => {
     const fetchProperties = async () => {
       try {
         setIsSearching(true);
-        
         const searchParams = {
           query_type: "hdb",
           page: currentPage,
@@ -79,17 +89,49 @@ const Search = () => {
           search: searchQuery,
           ...filters
         };
-
+  
         const response = await axios.post('http://localhost:8000/api/search/', searchParams);
-        
+  
         if (response.data.results) {
-          setProperties(response.data.results);
+          // Geocode properties and store coordinates
+          const geocodedProperties = await Promise.all(response.data.results.map(async (property) => {
+            if (!property.coordinates) {
+              try {
+                const geocodeResponse = await axios.get(
+                  `https://maps.googleapis.com/maps/api/geocode/json`,
+                  {
+                    params: {
+                      address: `${property.street_name}, Singapore`,
+                      key: 'AIzaSyDMr6Hck0M4zUmc-lwWcGDE1pdze6DU_sI',
+                    },
+                  }
+                );
+  
+                if (geocodeResponse.data.results.length > 0) {
+                  const { lat, lng } = geocodeResponse.data.results[0].geometry.location;
+                  return {
+                    ...property,
+                    coordinates: { lat, lng }
+                  };
+                }
+              } catch (error) {
+                console.error(`Error geocoding property at ${property.street_name}:`, error);
+              }
+            }
+            return property;
+          }));
+  
+          setProperties(geocodedProperties);
           setTotalPages(Math.ceil(response.data.total / ITEMS_PER_PAGE));
           setTotal(response.data.total);
-          console.log(properties);
+  
           // Move map to first result if exists
-          if (response.data.results.length > 0) {
-            moveToLocation(response.data.results[0].street_name);
+          if (geocodedProperties.length > 0) {
+            setCurrentMapLocation(geocodedProperties[0].coordinates);
+            if (mapRef.current) {
+              mapRef.current.panTo(geocodedProperties[0].coordinates);
+              mapRef.current.setZoom(15);
+            }
           }
         }
       } catch (err) {
@@ -100,11 +142,12 @@ const Search = () => {
         setLoading(false);
       }
     };
-
+  
     if (router.isReady) {
       fetchProperties();
     }
   }, [router.query, currentPage, searchQuery, filters]);
+  
 
   // Update URL with current search params
   const updateSearchParams = (newParams) => {
@@ -158,6 +201,7 @@ const Search = () => {
     }
     handleFilterChange(filterName, updatedValues);
   };
+  
 
   const moveToLocation = async (location) => {
     try {
@@ -529,11 +573,16 @@ const Search = () => {
           )}
         </section>
 
-        {/* Map Section */}
-        <section className={styles.mapSection}>
-          <Map ref={mapRef} googleMapsApiKey={'AIzaSyDMr6Hck0M4zUmc-lwWcGDE1pdze6DU_sI'} initialLocation={currentMapLocation}
-  properties={properties} />
-        </section>
+      {/* Map Section */}
+      <section className={styles.mapSection}>
+        <Map
+          ref={mapRef}
+          googleMapsApiKey={'AIzaSyDMr6Hck0M4zUmc-lwWcGDE1pdze6DU_sI'}
+          initialLocation={currentMapLocation}
+          properties={properties}
+          onMarkerClick={handleMarkerClick} // Pass the function to Map component
+        />
+      </section>
       </main>
 
       {/* Property Details Modal */}
