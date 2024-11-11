@@ -12,7 +12,14 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
     preschools: []
   });
   const [isLoadingNearby, setIsLoadingNearby] = useState(false);
+  const [reviews, setReviews] = useState([]);
+const [isLoadingReviews, setIsLoadingReviews] = useState(false);
 
+useEffect(() => {
+  if (activeTab === 'reviews' && item && type !== 'hdb') {
+    fetchReviews();
+  }
+}, [activeTab, item, type]);
   useEffect(() => {
     if (!show) {
       setActiveTab('details');
@@ -78,6 +85,20 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
       setIsLoadingNearby(false);
     }
   };
+
+  const fetchReviews = async () => {
+    setIsLoadingReviews(true);
+    try {
+      // Replace with the appropriate API endpoint or method for fetching reviews
+      const response = await axios.get(`http://localhost:8000/api/reviews/${item.id}`);
+      setReviews(response.data.reviews || []);
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    } finally {
+      setIsLoadingReviews(false);
+    }
+  };
+  
 
   const handleViewMap = (targetItem) => {
     console.log('View Map clicked:', {
@@ -203,7 +224,28 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
           </div>
         );
       }
-
+      const renderReview = (review) => (
+        <div key={review.time} className="p-3 border-bottom">
+          <div className="d-flex align-items-center mb-2">
+            <Image
+              src={review.profile_photo_url}
+              alt={review.author_name}
+              width={32}
+              height={32}
+              className="rounded-circle"
+            />
+            <div className="ms-2">
+              <a href={review.author_url} target="_blank" rel="noopener noreferrer">
+                <strong>{review.author_name}</strong>
+              </a>
+              <p className="mb-0 text-muted">{review.relative_time_description}</p>
+            </div>
+          </div>
+          <p className="mb-1">{review.text}</p>
+          <p className="mb-0"><strong>Rating:</strong> {review.rating} / 5</p>
+        </div>
+      );
+      
       return (
         <div className={styles.nearbyContainer}>
           {nearbyItems.schools.length > 0 && (
@@ -271,45 +313,67 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
       </Modal.Header>
       
       <Modal.Body className="p-0">
-        <Tabs
-          activeKey={activeTab}
-          onSelect={setActiveTab}
-          className="mb-3"
-        >
-          <Tab eventKey="details" title="Details">
-            <div className="p-4">
-              <Image
-                src={item?.image || `/images/${type}.jpg`}
-                alt={type === 'hdb' ? item?.street_name : 
-                    type === 'school' ? item?.school_name : 
-                    item?.centre_name}
-                width={800}
-                height={400}
-                className={styles.modalImage}
-              />
-              
-              <DetailContent item={item} type={type} />
+  <Tabs
+    activeKey={activeTab}
+    onSelect={setActiveTab}
+    className="mb-3"
+  >
+    <Tab eventKey="details" title="Details">
+      <div className="p-4">
+        <Image
+          src={item?.image || `/images/${type}.jpg`}
+          alt={type === 'hdb' ? item?.street_name : 
+               type === 'school' ? item?.school_name : 
+               item?.centre_name}
+          width={800}
+          height={400}
+          className={styles.modalImage}
+        />
 
-              <Button
-                variant="primary"
-                onClick={() => handleViewMap(item)}
-                className="w-full mt-4"
-              >
-                View Location on Map
-              </Button>
+        <DetailContent item={item} type={type} />
+
+        <Button
+          variant="primary"
+          onClick={() => handleViewMap(item)}
+          className="w-full mt-4"
+        >
+          View Location on Map
+        </Button>
+      </div>
+    </Tab>
+    
+    <Tab 
+      eventKey="nearby" 
+      title={type === 'hdb' ? 'Nearby Schools & Preschools' : 'Nearby HDB Properties'}
+    >
+      <div className="p-4">
+        {renderNearbySection()}
+      </div>
+    </Tab>
+
+    {/* Render the Reviews tab only if the type is not 'hdb' */}
+    {type !== 'hdb' && (
+      <Tab eventKey="reviews" title="Reviews">
+        <div className="p-4">
+          {isLoadingReviews ? (
+            <div className="text-center p-4">
+              <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
             </div>
-          </Tab>
-          
-          <Tab 
-            eventKey="nearby" 
-            title={type === 'hdb' ? 'Nearby Schools & Preschools' : 'Nearby HDB Properties'}
-          >
-            <div className="p-4">
-              {renderNearbySection()}
+          ) : reviews.length > 0 ? (
+            <div>
+              {reviews.map(renderReview)}
             </div>
-          </Tab>
-        </Tabs>
-      </Modal.Body>
+          ) : (
+            <p className="text-center text-muted">No reviews found</p>
+          )}
+        </div>
+      </Tab>
+    )}
+  </Tabs>
+</Modal.Body>
+
     </Modal>
   );
 };
