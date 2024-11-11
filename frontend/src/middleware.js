@@ -14,7 +14,7 @@ export function middleware(request) {
 
     // If no token on protected route, redirect to login
     if (!token) {
-      //return NextResponse.redirect(new URL("/login", request.url)); 
+      //return NextResponse.redirect(new URL("/login", request.url));
     }
   }
 
@@ -22,5 +22,5 @@ export function middleware(request) {
 }
 
 export const config = {
-  matcher: ["/search", "/about"], // Only run middleware on protected paths
+  matcher: protectedPaths, // Only run middleware on protected paths
 };

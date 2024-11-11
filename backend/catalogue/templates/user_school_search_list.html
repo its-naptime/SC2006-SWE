@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User School Searches</title>
+</head>
+<body>
+    <h1>User School Searches</h1>
+    <ul>
+        {% for search in searches %}
+            <li>
+                <a href="{% url 'user_school_search_detail' search.pk %}">{{ search.school_name }}</a>
+                <form action="{% url 'user_school_search_delete' search.pk %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit">Delete</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'user_school_search_create' %}">Create New Search</a>
+</body>
+</html>
