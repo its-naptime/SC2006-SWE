@@ -3,7 +3,21 @@ from django.contrib.auth.models import User
 from database.models import UserSchoolSearch, UserPreschoolSearch, UserHDBSearch
 from .forms import UserSchoolSearchForm, UserPreschoolSearchForm, UserHDBSearchForm
 from django.contrib.auth.decorators import login_required
+from .serializers import UserSchoolSearchSerializer, UserPreschoolSearchSerializer, UserHDBSearchSerializer
+from rest_framework import viewsets
 
+class UserSchoolSearchView(viewsets.ModelViewSet):
+    queryset = UserSchoolSearch.objects.all()
+    serializer_class = UserSchoolSearchSerializer
+
+class UserPreschoolSearchView(viewsets.ModelViewSet):
+    queryset = UserPreschoolSearch.objects.all()
+    serializer_class = UserPreschoolSearchSerializer
+
+class UserHDBSearchView(viewsets.ModelViewSet):
+    queryset = UserHDBSearch.objects.all()
+    serializer_class = UserHDBSearchSerializer
+    
 # List View
 @login_required
 def user_school_search_list(request):
