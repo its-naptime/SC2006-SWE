@@ -115,13 +115,8 @@ class school_info(models.Model):
     mothertongue1_code = models.CharField(max_length=255)
     mothertongue2_code = models.CharField(max_length=255, blank=True, null=True)
     mothertongue3_code = models.CharField(max_length=255, blank=True, null=True)
-<<<<<<< HEAD
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
-=======
-    latitude = models.DecimalField(max_digits=10, decimal_places=7, blank=True, null=True)
-    longitude = models.DecimalField(max_digits=10, decimal_places=7, blank=True, null=True)
->>>>>>> c71d5301df4f7c94d0bbce39e481e3fefb734cd2
 
     def __str__(self):
         return self.school_name
