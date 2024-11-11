@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "database",
     "search",
     "api",
+    "catalogue",
 ]
 
 MIDDLEWARE = [
