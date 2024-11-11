@@ -56,10 +56,3 @@ class UserHDBSearchListCreate(generics.ListCreateAPIView):
     queryset = models.UserHDBSearch.objects.all()
     serializer_class = serializers.UserHDBSearchSerializer
 
-class Review(generics.ListCreateAPIView):
-    queryset = models.Review.objects.all()
-    serializer_class = serializers.ReviewSerializer
-
-class Place(generics.ListCreateAPIView):
-    queryset = models.Place.objects.all()
-    serializer_class = serializers.PlaceSerializer

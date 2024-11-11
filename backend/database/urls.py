@@ -15,6 +15,4 @@ urlpatterns = [
     path('api/user_school_search/', views.UserSchoolSearchListCreate.as_view()),
     path('api/user_preschool_search/', views.UserPreschoolSearchListCreate.as_view()),
     path('api/user_hdb_search/', views.UserHDBSearchListCreate.as_view()),
-    path('api/review/', views.Review.as_view()),
-    path('api/place/', views.Place.as_view()),
 ]

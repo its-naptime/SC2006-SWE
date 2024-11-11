@@ -33,11 +33,3 @@ class UserHDBSearchSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.UserHDBSearch
         fields = '__all__'
-class ReviewSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Review
-        fields = '__all__'
-class PlaceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Place
-        fields = '__all__'
