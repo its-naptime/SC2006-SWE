@@ -6,6 +6,9 @@ const Map = forwardRef(({ googleMapsApiKey, initialLocation, properties }, ref) 
   const mapRefInternal = useRef(null);
   const [markers, setMarkers] = useState([]);
   const [selectedMarker, setSelectedMarker] = useState(null);
+  const [schoolMarkers, setSchoolMarkers] = useState([]);
+  const [selectedSchool, setSelectedSchool] = useState(null);
+  const [showSchools, setShowSchools] = useState(false); // State to track if schools are shown
 
   const onLoad = (map) => {
     mapRefInternal.current = map;
@@ -70,6 +73,30 @@ const Map = forwardRef(({ googleMapsApiKey, initialLocation, properties }, ref) 
       } else {
         console.error("setZoom function is not available on the map instance.");
       }
+    },
+    toggleSchoolMarkers: async () => {
+      if (showSchools) {
+        // Hide school markers
+        setSchoolMarkers([]);
+        setShowSchools(false);
+        setSelectedSchool(null);
+      } else {
+        try {
+          const response = await axios.get('http://localhost:8000/api/school_info/');
+          const schools = response.data;
+
+          const schoolMarkersData = schools.map((school) => ({
+            position: { lat: parseFloat(school.latitude), lng: parseFloat(school.longitude) },
+            title: school.school_name,
+            school,
+          }));
+
+          setSchoolMarkers(schoolMarkersData);
+          setShowSchools(true);
+        } catch (error) {
+          console.error('Error fetching nearby schools:', error);
+        }
+      }
     }
   }));
 
@@ -105,6 +132,33 @@ const Map = forwardRef(({ googleMapsApiKey, initialLocation, properties }, ref) 
                 alt={selectedMarker.property.street_name}
                 style={{ width: 'auto', height: 'auto' }}
               />
+            </div>
+          </InfoWindow>
+        )}
+
+{schoolMarkers.map((marker, index) => (
+  <Marker
+    key={`school-${index}`}
+    position={marker.position}
+    title={marker.title}
+    icon={{
+      url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png', // Replace with your preferred icon URL
+      scaledSize: new window.google.maps.Size(40, 40), // Adjust size as needed
+    }}
+    onClick={() => setSelectedSchool(marker)} // Set school marker on click
+  />
+))}
+
+        {selectedSchool && (
+          <InfoWindow
+            position={selectedSchool.position}
+            onCloseClick={() => setSelectedSchool(null)}
+          >
+            <div>
+              <h5>{selectedSchool.school.school_name}</h5>
+              <p><strong>Address:</strong> {selectedSchool.school.address}</p>
+              <p><strong>Telephone:</strong> {selectedSchool.school.telephone_no}</p>
+              <p><a href={selectedSchool.school.url_address} target="_blank" rel="noopener noreferrer">Visit School Website</a></p>
             </div>
           </InfoWindow>
         )}

@@ -147,7 +147,29 @@ const Search = () => {
       fetchProperties();
     }
   }, [router.query, currentPage, searchQuery, filters]);
-  
+  // Function to handle displaying nearby schools
+  const showNearbySchools = async (propertyCoordinates) => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/school_info/');
+      const schools = response.data;
+
+      // Map through the schools and create marker data using their lat/lng
+      const schoolMarkers = schools.map((school) => ({
+        position: {
+          lat: parseFloat(school.latitude),
+          lng: parseFloat(school.longitude)
+        },
+        title: school.school_name,
+        school, // Include the full school data for more info if needed
+      }));
+
+      // Call the mapRef function to set the school markers
+      mapRef.current?.setSchoolMarkers(schoolMarkers);
+    } catch (error) {
+      console.error('Error fetching or displaying nearby schools:', error);
+    }
+  };
+
 
   // Update URL with current search params
   const updateSearchParams = (newParams) => {
@@ -517,6 +539,12 @@ const Search = () => {
                         >
                           View Details
                         </Button>
+                        <Button
+  variant="info"
+  onClick={() => mapRef.current?.toggleSchoolMarkers(property.coordinates)}
+>
+  Show/Hide Nearby Schools
+</Button>
                       </div>
                     </div>
                   </div>
