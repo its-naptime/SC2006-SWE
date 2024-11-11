@@ -22,11 +22,11 @@ class SchoolInfoDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class SchoolCcaListCreate(generics.ListCreateAPIView):
     queryset = models.school_cca.objects.all()
-    serializer_class = serializers.SchoolCcaSerializer
+    serializer_class = serializers.SchoolCCASerializer
 
 class SchoolCcaDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = models.school_cca.objects.all()
-    serializer_class = serializers.SchoolCcaSerializer
+    serializer_class = serializers.SchoolCCASerializer
 
 class PreschoolCentreListCreate(generics.ListCreateAPIView):
     queryset = models.preschool_centre.objects.all()

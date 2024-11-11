@@ -66,6 +66,8 @@ class preschool_centre(models.Model):
     gst_regisration = models.CharField(max_length=255)
     last_updated = models.CharField(max_length=255)
     remarks = models.TextField()
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         return self.centre_name
@@ -112,6 +114,8 @@ class school_info(models.Model):
     mothertongue1_code = models.CharField(max_length=255)
     mothertongue2_code = models.CharField(max_length=255, blank=True, null=True)
     mothertongue3_code = models.CharField(max_length=255, blank=True, null=True)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         return self.school_name
@@ -138,6 +142,8 @@ class HDB_data(models.Model):
     lease_commence_date = models.IntegerField()
     remaining_lease = models.CharField(max_length=255)
     resale_price = models.DecimalField(max_digits=15, decimal_places=2)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.town} - {self.flat_type} - {self.resale_price}"

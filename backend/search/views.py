@@ -3,6 +3,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from .services.search_service import SearchService
 from rest_framework.pagination import PageNumberPagination
+from .services.nearby_search_service import NearbySearchService
 
 class CustomPagination(PageNumberPagination):
     page_size = 10
@@ -80,6 +81,24 @@ class SearchListCreate(generics.ListCreateAPIView):
             )
         except Exception as e:
             print(f"Search error: {str(e)}")  # for debugging
+            return Response(
+                {"error": "An unexpected error occurred"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+class NearbySearchView(generics.CreateAPIView):
+    def create(self, request, *args, **kwargs):
+        try:
+            service = NearbySearchService()
+            results = service.execute_search(request.data)
+            return Response(results)
+        except ValueError as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            print(f"Nearby search error: {str(e)}")  # for debugging
             return Response(
                 {"error": "An unexpected error occurred"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR

@@ -3,110 +3,432 @@ import { useRouter } from 'next/router';
 import Link from "next/link";
 import Image from "next/image";
 import axios from "axios";
+import { Button, Form } from "react-bootstrap";
+import { X } from 'lucide-react';
+import Layout from "../components/Layout";
 import Map from "../components/Map";
 import styles from "../styles/Search.module.css";
-import "bootstrap/dist/css/bootstrap.min.css";
-import Layout from "../components/Layout";
-import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button";
-import Form from "react-bootstrap/Form";
-import { X } from 'lucide-react';
+import { HDBFilters, SchoolFilters, PreschoolFilters } from "../components/Filters";
+import { HDBCard, SchoolCard, PreschoolCard } from "../components/SearchResults";
+import { DetailModal } from "../components/DetailModal";
 
 const ITEMS_PER_PAGE = 8;
+const NEARBY_RADIUS = 2; // in kilometers
 
 const Search = () => {
   const router = useRouter();
   const mapRef = useRef(null);
   
-  // State Management
-  const [properties, setProperties] = useState([]);
+  // Primary State Management
+  const [searchType, setSearchType] = useState("hdb");
+  const [primaryResults, setPrimaryResults] = useState([]);
+  const [nearbyResults, setNearbyResults] = useState({
+    schools: [],
+    preschools: [],
+    hdb: []
+  });
   const [showModal, setShowModal] = useState(false);
-  const [selectedProperty, setSelectedProperty] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [currentViewMarkers, setCurrentViewMarkers] = useState([]);
+  
+  // Loading States
+  const [loading, setLoading] = useState({
+    primary: true,
+    nearby: false
+  });
+  const [isMovingMap, setIsMovingMap] = useState(false);
+  const [isLoadingMarkers, setIsLoadingMarkers] = useState(false);
+  
+  // Error State
   const [error, setError] = useState(null);
+  
+  // Pagination States
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [total, setTotal] = useState(0);
-  // Search and Filter States
+  
+  // UI States
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentMapLocation, setCurrentMapLocation] = useState(null);
+  
+  // Filter States
   const [filters, setFilters] = useState({
+    // HDB filters
     minPrice: "",
     maxPrice: "",
     minArea: "",
     maxArea: "",
     flatTypes: [],
     towns: [],
-    sortBy: "price_desc"
+    sortBy: "price_desc",
+    
+    // School filters
+    zones: [],
+    mainlevel: "",
+    schoolTypes: [],
+    cca: "",
+    sap: false,
+    gifted: false,
+    ip: false,
+    
+    // Preschool filters
+    postalCodes: [],
+    level: "",
+    serviceModels: [],
+    sparkCertified: false,
+    transportRequired: false
   });
 
-  // Loading state for individual actions
-  const [isSearching, setIsSearching] = useState(false);
-  const [isMovingMap, setIsMovingMap] = useState(false);
-  const [currentMapLocation, setCurrentMapLocation] = useState(null);
-
+  // Initialize states from URL params
   useEffect(() => {
-    // Initialize states from URL params
-    const { query } = router;
-    setSearchQuery(query.search || "");
-    setCurrentPage(parseInt(query.page) || 1);
-    setFilters(prev => ({
-      ...prev,
-      minPrice: query.minPrice || "",
-      maxPrice: query.maxPrice || "",
-      minArea: query.minArea || "",
-      maxArea: query.maxArea || "",
-      flatTypes: query.flatTypes ? 
-        (Array.isArray(query.flatTypes) ? query.flatTypes : [query.flatTypes]) : 
-        [],
-      towns: query.towns ? 
-        (Array.isArray(query.towns) ? query.towns : [query.towns]) : 
-        [],
-      sortBy: query.sortBy || "price_desc"
-    }));
+    if (router.isReady) {
+      const { query } = router;
+      setSearchQuery(query.search || "");
+      setSearchType(query.searchType || "hdb");
+      setCurrentPage(parseInt(query.page) || 1);
+      initializeFilters(query);
+    }
   }, [router.isReady]);
 
-  // Fetch properties when search params change
-  useEffect(() => {
-    const fetchProperties = async () => {
-      try {
-        setIsSearching(true);
-        
-        const searchParams = {
-          query_type: "hdb",
-          page: currentPage,
-          page_size: ITEMS_PER_PAGE,
-          search: searchQuery,
-          ...filters
-        };
+  // Helper Functions
+  const initializeFilters = (query) => {
+    const newFilters = { ...filters };
+    
+    if (query.searchType === 'hdb' || !query.searchType) {
+      newFilters.minPrice = query.minPrice || "";
+      newFilters.maxPrice = query.maxPrice || "";
+      newFilters.minArea = query.minArea || "";
+      newFilters.maxArea = query.maxArea || "";
+      newFilters.flatTypes = query.flatTypes ? 
+        (Array.isArray(query.flatTypes) ? query.flatTypes : [query.flatTypes]) : 
+        [];
+      newFilters.towns = query.towns ? 
+        (Array.isArray(query.towns) ? query.towns : [query.towns]) : 
+        [];
+      newFilters.sortBy = query.sortBy || "price_desc";
+    } else if (query.searchType === 'school') {
+      newFilters.zones = query.zones ? 
+        (Array.isArray(query.zones) ? query.zones : [query.zones]) : 
+        [];
+      newFilters.mainlevel = query.mainlevel || "";
+      newFilters.schoolTypes = query.schoolTypes ? 
+        (Array.isArray(query.schoolTypes) ? query.schoolTypes : [query.schoolTypes]) : 
+        [];
+      newFilters.cca = query.cca || "";
+      newFilters.sap = query.sap === "true";
+      newFilters.gifted = query.gifted === "true";
+      newFilters.ip = query.ip === "true";
+    } else if (query.searchType === 'preschool') {
+      newFilters.postalCodes = query.postalCodes ? 
+        (Array.isArray(query.postalCodes) ? query.postalCodes : [query.postalCodes]) : 
+        [];
+      newFilters.level = query.level || "";
+      newFilters.serviceModels = query.serviceModels ? 
+        (Array.isArray(query.serviceModels) ? query.serviceModels : [query.serviceModels]) : 
+        [];
+      newFilters.sparkCertified = query.sparkCertified === "true";
+      newFilters.transportRequired = query.transportRequired === "true";
+    }
+    setFilters(newFilters);
+  };
 
-        const response = await axios.post('http://localhost:8000/api/search/', searchParams);
-        
-        if (response.data.results) {
-          setProperties(response.data.results);
-          setTotalPages(Math.ceil(response.data.total / ITEMS_PER_PAGE));
-          setTotal(response.data.total);
-          console.log(properties);
-          // Move map to first result if exists
-          if (response.data.results.length > 0) {
-            moveToLocation(response.data.results[0].street_name);
+  const getTypeSpecificParams = () => {
+    switch (searchType) {
+      case 'hdb':
+        return {
+          minPrice: filters.minPrice,
+          maxPrice: filters.maxPrice,
+          minArea: filters.minArea,
+          maxArea: filters.maxArea,
+          flatTypes: filters.flatTypes,
+          towns: filters.towns,
+          sortBy: filters.sortBy
+        };
+      case 'school':
+        return {
+          zones: filters.zones,
+          mainlevel: filters.mainlevel,
+          types: filters.schoolTypes,
+          cca: filters.cca,
+          sap: filters.sap,
+          gifted: filters.gifted,
+          ip: filters.ip
+        };
+      case 'preschool':
+        return {
+          postal_codes: filters.postalCodes,
+          level: filters.level,
+          service_models: filters.serviceModels,
+          spark_certified: filters.sparkCertified,
+          transport_required: filters.transportRequired
+        };
+      default:
+        return {};
+    }
+  };
+
+  // Map and Location Functions
+  const fetchNearbyItemsData = async (latitude, longitude, primaryType, primaryId) => {
+    const fetchForType = async (type) => {
+      try {
+        const response = await axios.post(
+          `http://localhost:8000/api/search/nearby/`,
+          {
+            latitude: parseFloat(latitude),
+            longitude: parseFloat(longitude),
+            radius: NEARBY_RADIUS,
+            exclude_id: primaryId,
+            type
           }
-        }
-      } catch (err) {
-        console.error("Error fetching properties:", err);
-        setError("Failed to fetch properties. Please try again.");
-      } finally {
-        setIsSearching(false);
-        setLoading(false);
+        );
+        return response.data.results;
+      } catch (error) {
+        console.error(`Error fetching nearby ${type}:`, error);
+        return [];
       }
     };
 
-    if (router.isReady) {
-      fetchProperties();
+    if (primaryType === 'hdb') {
+      const [schools, preschools] = await Promise.all([
+        fetchForType('school'),
+        fetchForType('preschool')
+      ]);
+      return { schools, preschools, hdb: [] };
+    } else {
+      const hdb = await fetchForType('hdb');
+      return { schools: [], preschools: [], hdb };
     }
-  }, [router.query, currentPage, searchQuery, filters]);
+  };
 
-  // Update URL with current search params
+  const createMarkersFromData = (mainItem, nearbyData) => {
+    // Create main marker
+    const mainMarker = {
+      location: {
+        lat: parseFloat(mainItem.latitude),
+        lng: parseFloat(mainItem.longitude)
+      },
+      title: mainItem.street_name || mainItem.school_name || mainItem.centre_name,
+      type: searchType,
+      isMain: true
+    };
+
+    // Create nearby markers
+    let nearbyMarkers = [];
+    
+    if (searchType === 'hdb') {
+      nearbyMarkers = [
+        ...nearbyData.schools.map(school => ({
+          location: {
+            lat: parseFloat(school.latitude),
+            lng: parseFloat(school.longitude)
+          },
+          title: school.school_name,
+          type: 'school',
+          distance: school.distance
+        })),
+        ...nearbyData.preschools.map(preschool => ({
+          location: {
+            lat: parseFloat(preschool.latitude),
+            lng: parseFloat(preschool.longitude)
+          },
+          title: preschool.centre_name,
+          type: 'preschool',
+          distance: preschool.distance
+        }))
+      ];
+    } else {
+      nearbyMarkers = nearbyData.hdb.map(hdb => ({
+        location: {
+          lat: parseFloat(hdb.latitude),
+          lng: parseFloat(hdb.longitude)
+        },
+        title: `${hdb.block} ${hdb.street_name}`,
+        type: 'hdb',
+        distance: hdb.distance
+      }));
+    }
+
+    return [mainMarker, ...nearbyMarkers];
+  };
+
+  const handleViewMap = async (item) => {
+    try {
+      // Set loading states
+      setIsMovingMap(true);
+      setIsLoadingMarkers(true);
+      
+      // Clear all existing markers and nearby results
+      setCurrentViewMarkers([]);
+      setNearbyResults({
+        schools: [],
+        preschools: [],
+        hdb: []
+      });
+
+      // If we're in a modal, close it
+      if (showModal) {
+        handleCloseModal();
+      }
+
+      // Get the location
+      const location = {
+        lat: parseFloat(item.latitude),
+        lng: parseFloat(item.longitude)
+      };
+
+      // Move map first
+      if (mapRef.current) {
+        mapRef.current.panTo(location);
+        mapRef.current.setZoom(15);
+      }
+
+      // Fetch nearby items
+      const nearbyData = await fetchNearbyItemsData(
+        location.lat,
+        location.lng,
+        searchType,
+        item.id
+      );
+
+      // Update nearby results state
+      setNearbyResults(nearbyData);
+
+      // Create and set all markers
+      const markers = createMarkersFromData(item, nearbyData);
+      setCurrentViewMarkers(markers);
+
+      // Fit bounds if there are multiple markers
+      if (mapRef.current && markers.length > 1) {
+        const bounds = new google.maps.LatLngBounds();
+        markers.forEach(marker => bounds.extend(marker.location));
+        mapRef.current.fitBounds(bounds);
+        
+        google.maps.event.addListenerOnce(mapRef.current, 'bounds_changed', () => {
+          if (mapRef.current.getZoom() > 16) {
+            mapRef.current.setZoom(16);
+          }
+        });
+      }
+
+      setCurrentMapLocation(location);
+
+    } catch (error) {
+      console.error("Error in handleViewMap:", error);
+      setError("Failed to update map view");
+    } finally {
+      setIsMovingMap(false);
+      setIsLoadingMarkers(false);
+    }
+  };
+
+  // Primary results fetching
+  useEffect(() => {
+    const fetchResults = async () => {
+      if (!router.isReady) return;
+
+      try {
+        setLoading(prev => ({ ...prev, primary: true }));
+        setError(null);
+        
+        const searchParams = {
+          query_type: searchType,
+          page: currentPage,
+          page_size: ITEMS_PER_PAGE,
+          search: searchQuery,
+          ...getTypeSpecificParams()
+        };
+
+        const response = await axios.post(
+          `http://localhost:8000/api/search/`,
+          searchParams
+        );
+        
+        if (response.data.results) {
+          setPrimaryResults(response.data.results);
+          setTotalPages(Math.ceil(response.data.total / ITEMS_PER_PAGE));
+          setTotal(response.data.total);
+          // Don't clear markers here - let handleViewMap handle that
+        }
+      } catch (err) {
+        console.error("Error fetching results:", err);
+        setError("Failed to fetch results. Please try again.");
+      } finally {
+        setLoading(prev => ({ ...prev, primary: false }));
+      }
+    };
+
+    fetchResults();
+  }, [router.query, currentPage, searchQuery, filters, searchType, router.isReady]);
+
+  // Event Handlers
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setCurrentPage(1);
+    updateSearchParams({ 
+      search: searchQuery,
+      page: 1
+    });
+  };
+
+  const handleFilterChange = (filterName, value) => {
+    const updatedFilters = {
+      ...filters,
+      [filterName]: value
+    };
+    setFilters(updatedFilters);
+    setCurrentPage(1);
+    updateSearchParams({ 
+      ...getTypeSpecificParams(),
+      page: 1
+    });
+  };
+
+  const handleRemoveFilter = (filterName, value) => {
+    let updatedValues;
+    if (Array.isArray(filters[filterName])) {
+      updatedValues = filters[filterName].filter(v => v !== value);
+    } else {
+      updatedValues = "";
+    }
+    handleFilterChange(filterName, updatedValues);
+  };
+
+  const handleSearchTypeChange = (type) => {
+    setSearchType(type);
+    setCurrentPage(1);
+    setCurrentViewMarkers([]); // Clear markers when changing search type
+    setNearbyResults({ schools: [], preschools: [], hdb: [] });
+  
+    // Reset filters when changing search type
+    setFilters({
+      ...filters,
+      ...(type === 'hdb' ? {
+        minPrice: "", maxPrice: "", minArea: "", maxArea: "",
+        flatTypes: [], towns: [], sortBy: "price_desc"
+      } : type === 'school' ? {
+        zones: [], mainlevel: "", schoolTypes: [], cca: "",
+        sap: false, gifted: false, ip: false
+      } : {
+        postalCodes: [], level: "", serviceModels: [],
+        sparkCertified: false, transportRequired: false
+      })
+    });
+  
+    // Reset URL parameters
+    const baseParams = {
+      searchType: type,
+      page: 1,
+      search: searchQuery
+    };
+  
+    router.push({
+      pathname: router.pathname,
+      query: baseParams
+    }, undefined, { shallow: true });
+  };
+  
+
   const updateSearchParams = (newParams) => {
     const updatedQuery = {
       ...router.query,
@@ -127,89 +449,140 @@ const Search = () => {
     }, undefined, { shallow: true });
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setCurrentPage(1); // Reset to first page
-    updateSearchParams({ 
-      search: searchQuery,
-      page: 1
-    });
-  };
-
-  const handleFilterChange = (filterName, value) => {
-    const updatedFilters = {
-      ...filters,
-      [filterName]: value
-    };
-    setFilters(updatedFilters);
-    setCurrentPage(1);
-    updateSearchParams({ 
-      ...updatedFilters,
-      page: 1
-    });
-  };
-
-  const handleRemoveFilter = (filterName, value) => {
-    let updatedValues;
-    if (Array.isArray(filters[filterName])) {
-      updatedValues = filters[filterName].filter(v => v !== value);
-    } else {
-      updatedValues = "";
-    }
-    handleFilterChange(filterName, updatedValues);
-  };
-
-  const moveToLocation = async (location) => {
-    try {
-      setIsMovingMap(true);
-      console.log(location);
-      const response = await axios.get(
-        `https://maps.googleapis.com/maps/api/geocode/json`,
-        {
-          params: {
-            address: `${location}, Singapore`,
-            key: 'AIzaSyDMr6Hck0M4zUmc-lwWcGDE1pdze6DU_sI',
-          },
-        }
-      );
-
-      if (response.data.results.length > 0) {
-        const { lat, lng } = response.data.results[0].geometry.location;
-        setCurrentMapLocation({ lat, lng });
-        if (mapRef.current) {
-          mapRef.current.panTo({ lat, lng });
-          mapRef.current.setZoom(15);
-        }
-      }
-    } catch (error) {
-      console.error("Error moving map:", error);
-    } finally {
-      setIsMovingMap(false);
-    }
-  };
-
-  const handleShowModal = (property) => {
-    setSelectedProperty(property);
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setSelectedProperty(null);
-  };
-
   const handlePageChange = (page) => {
     setCurrentPage(page);
     updateSearchParams({ page });
     window.scrollTo(0, 0);
   };
 
+  const handleShowModal = async (item) => {
+    setSelectedItem(item);
+    setShowModal(true);
+    await handleViewMap(item);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedItem(null);
+  };
+
+  const renderActiveFilters = () => {
+    const activeFilters = [];
+    
+    if (searchType === 'hdb') {
+      if (filters.minPrice || filters.maxPrice) {
+        activeFilters.push({
+          label: `Price: $${filters.minPrice || '0'} - $${filters.maxPrice || '∞'}`,
+          onRemove: () => {
+            handleFilterChange('minPrice', '');
+            handleFilterChange('maxPrice', '');
+          }
+        });
+      }
+      if (filters.minArea || filters.maxArea) {
+        activeFilters.push({
+          label: `Area: ${filters.minArea || '0'} - ${filters.maxArea || '∞'} sqm`,
+          onRemove: () => {
+            handleFilterChange('minArea', '');
+            handleFilterChange('maxArea', '');
+          }
+        });
+      }
+      filters.flatTypes.forEach(type => {
+        activeFilters.push({
+          label: type,
+          onRemove: () => handleRemoveFilter('flatTypes', type)
+        });
+      });
+      filters.towns.forEach(town => {
+        activeFilters.push({
+          label: town,
+          onRemove: () => handleRemoveFilter('towns', town)
+        });
+      });
+    } else if (searchType === 'school') {
+      if (filters.mainlevel) {
+        activeFilters.push({
+          label: `Level: ${filters.mainlevel}`,
+          onRemove: () => handleFilterChange('mainlevel', '')
+        });
+      }
+      filters.zones.forEach(zone => {
+        activeFilters.push({
+          label: `Zone: ${zone}`,
+          onRemove: () => handleRemoveFilter('zones', zone)
+        });
+      });
+      if (filters.cca) {
+        activeFilters.push({
+          label: `CCA: ${filters.cca}`,
+          onRemove: () => handleFilterChange('cca', '')
+        });
+      }
+      if (filters.sap) activeFilters.push({
+        label: 'SAP School',
+        onRemove: () => handleFilterChange('sap', false)
+      });
+      if (filters.gifted) activeFilters.push({
+        label: 'Gifted Program',
+        onRemove: () => handleFilterChange('gifted', false)
+      });
+      if (filters.ip) activeFilters.push({
+        label: 'IP School',
+        onRemove: () => handleFilterChange('ip', false)
+      });
+    } else {
+      if (filters.level) {
+        activeFilters.push({
+          label: `Level: ${filters.level}`,
+          onRemove: () => handleFilterChange('level', '')
+        });
+      }
+      filters.serviceModels.forEach(model => {
+        activeFilters.push({
+          label: model,
+          onRemove: () => handleRemoveFilter('serviceModels', model)
+        });
+      });
+      if (filters.sparkCertified) activeFilters.push({
+        label: 'SPARK Certified',
+        onRemove: () => handleFilterChange('sparkCertified', false)
+      });
+      if (filters.transportRequired) activeFilters.push({
+        label: 'Transport Available',
+        onRemove: () => handleFilterChange('transportRequired', false)
+      });
+    }
+
+    return activeFilters;
+  };
+
   return (
     <div className={styles.container}>
       <Layout />
       
-      {/* Header with Search */}
       <header className={styles.header}>
+        <div className={styles.searchTypeSelector}>
+          <Button
+            variant={searchType === 'hdb' ? 'primary' : 'outline-primary'}
+            onClick={() => handleSearchTypeChange('hdb')}
+          >
+            HDB
+          </Button>
+          <Button
+            variant={searchType === 'school' ? 'primary' : 'outline-primary'}
+            onClick={() => handleSearchTypeChange('school')}
+          >
+            Schools
+          </Button>
+          <Button
+            variant={searchType === 'preschool' ? 'primary' : 'outline-primary'}
+            onClick={() => handleSearchTypeChange('preschool')}
+          >
+            Preschools
+          </Button>
+        </div>
+
         <div className={styles.searchBar}>
           <Link href="/">
             <button className="btn">
@@ -222,11 +595,11 @@ const Search = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by location, street name..."
+              placeholder={`Search ${searchType}s...`}
               className={styles.input}
             />
-            <button type="submit" className="btn btn-outline-primary" disabled={isSearching}>
-              {isSearching ? (
+            <button type="submit" className="btn btn-outline-primary" disabled={loading.primary}>
+              {loading.primary ? (
                 <span className="spinner-border spinner-border-sm" />
               ) : (
                 <Image src="/images/search_btn.png" alt="Search" width={24} height={24} />
@@ -238,57 +611,18 @@ const Search = () => {
             variant={showFilters ? "primary" : "outline-primary"}
             onClick={() => setShowFilters(!showFilters)}
           >
-            Filters {filters.flatTypes.length + (filters.towns.length ? 1 : 0) + 
-              (filters.minPrice || filters.maxPrice ? 1 : 0) + 
-              (filters.minArea || filters.maxArea ? 1 : 0) > 0 && 
-              `(${filters.flatTypes.length + (filters.towns.length ? 1 : 0) + 
-                (filters.minPrice || filters.maxPrice ? 1 : 0) + 
-                (filters.minArea || filters.maxArea ? 1 : 0)})`
+            Filters {renderActiveFilters().length > 0 && 
+              `(${renderActiveFilters().length})`
             }
           </Button>
         </div>
 
-        {/* Active Filters Tags */}
-        {(filters.flatTypes.length > 0 || filters.towns.length > 0 || 
-          filters.minPrice || filters.maxPrice || filters.minArea || filters.maxArea) && (
+        {renderActiveFilters().length > 0 && (
           <div className={styles.filterTags}>
-            {filters.minPrice || filters.maxPrice ? (
-              <span className={styles.filterTag}>
-                Price: ${filters.minPrice || '0'} - ${filters.maxPrice || '∞'}
-                <button onClick={() => {
-                  handleFilterChange('minPrice', '');
-                  handleFilterChange('maxPrice', '');
-                }}>
-                  <X size={16} />
-                </button>
-              </span>
-            ) : null}
-
-            {filters.minArea || filters.maxArea ? (
-              <span className={styles.filterTag}>
-                Area: {filters.minArea || '0'} - {filters.maxArea || '∞'} sqm
-                <button onClick={() => {
-                  handleFilterChange('minArea', '');
-                  handleFilterChange('maxArea', '');
-                }}>
-                  <X size={16} />
-                </button>
-              </span>
-            ) : null}
-
-            {filters.flatTypes.map(type => (
-              <span key={type} className={styles.filterTag}>
-                {type}
-                <button onClick={() => handleRemoveFilter('flatTypes', type)}>
-                  <X size={16} />
-                </button>
-              </span>
-            ))}
-
-            {filters.towns.map(town => (
-              <span key={town} className={styles.filterTag}>
-                {town}
-                <button onClick={() => handleRemoveFilter('towns', town)}>
+            {renderActiveFilters().map((filter, index) => (
+              <span key={index} className={styles.filterTag}>
+                {filter.label}
+                <button onClick={filter.onRemove}>
                   <X size={16} />
                 </button>
               </span>
@@ -296,190 +630,73 @@ const Search = () => {
           </div>
         )}
 
-        {/* Filters Panel */}
         {showFilters && (
           <div className={styles.filtersPanel}>
-            <Form className="row g-3">
-              <Form.Group className="col-md-6">
-                <Form.Label>Price Range</Form.Label>
-                <div className="d-flex gap-2">
-                  <Form.Control
-                    type="number"
-                    placeholder="Min Price"
-                    value={filters.minPrice}
-                    onChange={(e) => handleFilterChange('minPrice', e.target.value)}
-                  />
-                  <Form.Control
-                    type="number"
-                    placeholder="Max Price"
-                    value={filters.maxPrice}
-                    onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
-                  />
-                </div>
-              </Form.Group>
-
-              <Form.Group className="col-md-6">
-                <Form.Label>Area (sqm)</Form.Label>
-                <div className="d-flex gap-2">
-                  <Form.Control
-                    type="number"
-                    placeholder="Min Area"
-                    value={filters.minArea}
-                    onChange={(e) => handleFilterChange('minArea', e.target.value)}
-                  />
-                  <Form.Control
-                    type="number"
-                    placeholder="Max Area"
-                    value={filters.maxArea}
-                    onChange={(e) => handleFilterChange('maxArea', e.target.value)}
-                  />
-                </div>
-              </Form.Group>
-
-              <Form.Group className="col-md-6">
-                <Form.Label>Flat Type</Form.Label>
-                <Form.Select
-                  multiple
-                  value={filters.flatTypes}
-                  onChange={(e) => handleFilterChange('flatTypes', 
-                    Array.from(e.target.selectedOptions, option => option.value)
-                  )}
-                >
-                  <option value="2 ROOM">2 ROOM</option>
-                  <option value="3 ROOM">3 ROOM</option>
-                  <option value="4 ROOM">4 ROOM</option>
-                  <option value="5 ROOM">5 ROOM</option>
-                  <option value="EXECUTIVE">EXECUTIVE</option>
-                </Form.Select>
-              </Form.Group>
-
-              <Form.Group className="col-md-6">
-                <Form.Label>Town</Form.Label>
-                <Form.Select
-                  multiple
-                  value={filters.towns}
-                  onChange={(e) => handleFilterChange('towns', 
-                    Array.from(e.target.selectedOptions, option => option.value)
-                  )}
-                >
-                  <option value="ANG MO KIO">ANG MO KIO</option>
-                  <option value="BEDOK">BEDOK</option>
-                  <option value="BISHAN">BISHAN</option>
-                  <option value="BUKIT BATOK">BUKIT BATOK</option>
-                  <option value="BUKIT MERAH">BUKIT MERAH</option>
-                  <option value="BUKIT PANJANG">BUKIT PANJANG</option>
-                  <option value="BUKIT TIMAH">BUKIT TIMAH</option>
-                  <option value="CENTRAL AREA">CENTRAL AREA</option>
-                  <option value="CHOA CHU KANG">CHOA CHU KANG</option>
-                  <option value="CLEMENTI">CLEMENTI</option>
-                  <option value="GEYLANG">GEYLANG</option>
-                  <option value="HOUGANG">HOUGANG</option>
-                  <option value="JURONG EAST">JURONG EAST</option>
-                  <option value="JURONG WEST">JURONG WEST</option>
-                  <option value="KALLANG/WHAMPOA">KALLANG/WHAMPOA</option>
-                  <option value="MARINE PARADE">MARINE PARADE</option>
-                  <option value="PASIR RIS">PASIR RIS</option>
-                  <option value="PUNGGOL">PUNGGOL</option>
-                  <option value="QUEENSTOWN">QUEENSTOWN</option>
-                  <option value="SEMBAWANG">SEMBAWANG</option>
-                  <option value="SENGKANG">SENGKANG</option>
-                  <option value="SERANGOON">SERANGOON</option>
-                  <option value="TAMPINES">TAMPINES</option>
-                  <option value="TOA PAYOH">TOA PAYOH</option>
-                  <option value="WOODLANDS">WOODLANDS</option>
-                  <option value="YISHUN">YISHUN</option>
-                </Form.Select>
-              </Form.Group>
-
-              <Form.Group className="col-12">
-                <Form.Label>Sort By</Form.Label>
-                <Form.Select
-                  value={filters.sortBy}
-                  onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-                >
-                  <option value="price_desc">Price (High to Low)</option>
-                  <option value="price_asc">Price (Low to High)</option>
-                  <option value="area_desc">Area (Large to Small)</option>
-                  <option value="area_asc">Area (Small to Large)</option>
-                </Form.Select>
-              </Form.Group>
-            </Form>
+            {searchType === 'hdb' && (
+              <HDBFilters filters={filters} onFilterChange={handleFilterChange} />
+            )}
+            {searchType === 'school' && (
+              <SchoolFilters filters={filters} onFilterChange={handleFilterChange} />
+            )}
+            {searchType === 'preschool' && (
+              <PreschoolFilters filters={filters} onFilterChange={handleFilterChange} />
+            )}
           </div>
         )}
       </header>
 
-      {/* Main Content */}
       <main className={styles.main}>
-        {/* Property List Section */}
-        <section className={styles.housingList}>
-          {/* Loading State */}
-          {loading ? (
-            <div className={styles.loadingOverlay}>
-              <div className={styles.spinner}></div>
-            </div>
-          ) : error ? (
+        <section className={styles.resultsList}>
+          {error ? (
             <div className="alert alert-danger" role="alert">
               {error}
             </div>
-          ) : properties.length === 0 ? (
+          ) : primaryResults.length === 0 ? (
             <div className="text-center py-5">
-              <h3>No properties found</h3>
+              <h3>No results found</h3>
               <p>Try adjusting your search criteria</p>
             </div>
           ) : (
             <>
-              <h1>Properties Found ({total})</h1>
+              <h2>{searchType.toUpperCase()} Results ({total})</h2>
               
-              <div className={styles.propertyList}>
-                {properties.map((property) => (
-                  <div 
-                    className={styles.propertyCard} 
-                    key={property.id}
-                  >
-                    <Image
-                      src={property.image || "/images/property.jpg"}
-                      alt={property.street_name}
-                      width={300}
-                      height={200}
-                      className={styles.propertyImage}
-                      onClick={() => handleShowModal(property)}
-                    />
-                    <div className={styles.propertyDetails}>
-                      <h4>{property.street_name}</h4>
-                      <p className="text-primary fw-bold">
-                        ${property.resale_price?.toLocaleString()}
-                      </p>
-                      <p>
-                        {property.floor_area_sqm} sqm | {property.flat_type}
-                      </p>
-                      <p>{property.town}</p>
-                      <div className="d-flex justify-content-between align-items-center mt-2">
-                        <Button
-                          variant="outline-primary"
-                          size="sm"
-                          onClick={() => moveToLocation(property.street_name)}
-                          disabled={isMovingMap}
-                        >
-                          {isMovingMap ? (
-                            <span className="spinner-border spinner-border-sm" />
-                          ) : (
-                            'View on Map'
-                          )}
-                        </Button>
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          onClick={() => handleShowModal(property)}
-                        >
-                          View Details
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <div className={`${styles.resultGrid} ${loading.primary ? styles.loading : ''}`}>
+                {primaryResults.map(item => {
+                  switch (searchType) {
+                    case 'hdb':
+                      return (
+                        <HDBCard
+                          key={item.id}
+                          property={item}
+                          onViewMap={handleViewMap}
+                          onViewDetails={handleShowModal}
+                          isMovingMap={isMovingMap}
+                        />
+                      );
+                    case 'school':
+                      return (
+                        <SchoolCard
+                          key={item.id}
+                          school={item}
+                          onViewMap={handleViewMap}
+                          onViewDetails={handleShowModal}
+                          isMovingMap={isMovingMap}
+                        />
+                      );
+                    case 'preschool':
+                      return (
+                        <PreschoolCard
+                          key={item.id}
+                          preschool={item}
+                          onViewMap={handleViewMap}
+                          onViewDetails={handleShowModal}
+                          isMovingMap={isMovingMap}
+                        />
+                      );
+                  }
+                })}
               </div>
 
-              {/* Pagination */}
               {totalPages > 1 && (
                 <div className={styles.pagination}>
                   <Button
@@ -492,7 +709,6 @@ const Search = () => {
                   
                   {[...Array(totalPages)].map((_, index) => {
                     const pageNumber = index + 1;
-                    // Show first page, last page, current page and 1 page before and after current
                     if (
                       pageNumber === 1 ||
                       pageNumber === totalPages ||
@@ -529,74 +745,28 @@ const Search = () => {
           )}
         </section>
 
-        {/* Map Section */}
         <section className={styles.mapSection}>
-          <Map ref={mapRef} googleMapsApiKey={'AIzaSyDMr6Hck0M4zUmc-lwWcGDE1pdze6DU_sI'} initialLocation={currentMapLocation}/>
+          {isLoadingMarkers && (
+            <div className={styles.mapLoadingOverlay}>
+              <div className={styles.spinner}></div>
+            </div>
+          )}
+          <Map 
+            ref={mapRef} 
+            googleMapsApiKey={process.env.NEXT_PUBLIC_API_KEY}
+            initialLocation={currentMapLocation}
+            markers={currentViewMarkers}
+          />
         </section>
       </main>
 
-      {/* Property Details Modal */}
-      <Modal 
-        show={showModal} 
-        onHide={handleCloseModal} 
-        size="lg" 
-        centered
-        className={styles.modal}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>{selectedProperty?.street_name}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {selectedProperty && (
-            <div className={styles.modalContent}>
-              <Image
-                src={selectedProperty.image || "/images/property.jpg"}
-                alt={selectedProperty.street_name}
-                width={800}
-                height={400}
-                className={styles.modalImage}
-              />
-              
-              <div className={styles.modalDetails}>
-                <div className={styles.modalDetail}>
-                  <strong>Town:</strong> {selectedProperty.town}
-                </div>
-                <div className={styles.modalDetail}>
-                  <strong>Flat Type:</strong> {selectedProperty.flat_type}
-                </div>
-                <div className={styles.modalDetail}>
-                  <strong>Floor Area:</strong> {selectedProperty.floor_area_sqm} sqm
-                </div>
-                <div className={styles.modalDetail}>
-                  <strong>Price:</strong> ${selectedProperty.resale_price?.toLocaleString()}
-                </div>
-                <div className={styles.modalDetail}>
-                  <strong>Storey Range:</strong> {selectedProperty.storey_range}
-                </div>
-                <div className={styles.modalDetail}>
-                  <strong>Flat Model:</strong> {selectedProperty.flat_model}
-                </div>
-                <div className={styles.modalDetail}>
-                  <strong>Lease Started:</strong> {selectedProperty.lease_commence_date}
-                </div>
-                <div className={styles.modalDetail}>
-                  <strong>Remaining Lease:</strong> {selectedProperty.remaining_lease}
-                </div>
-              </div>
-
-              <div className="mt-4">
-                <Button
-                  variant="primary"
-                  onClick={() => moveToLocation(selectedProperty.street_name)}
-                  className="w-100"
-                >
-                  View Location on Map
-                </Button>
-              </div>
-            </div>
-          )}
-        </Modal.Body>
-      </Modal>
+      <DetailModal
+        show={showModal}
+        onHide={handleCloseModal}
+        item={selectedItem}
+        type={searchType}
+        onViewMap={handleViewMap}
+      />
     </div>
   );
 };
