@@ -9,19 +9,11 @@ function Form({ activeTab, setActiveTab }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [registerDetails, setRegisterDetails] = useState({
-<<<<<<< HEAD
     name: "",
     username: "",
     email: "",
     password: "",
     confirmPassword: "",
-=======
-    //name: "",
-    username: "",
-    email: "",
-    password: "",
-    //confirmPassword: "",
->>>>>>> c71d5301df4f7c94d0bbce39e481e3fefb734cd2
   });
   const router = useRouter();
 
@@ -33,15 +25,9 @@ function Form({ activeTab, setActiveTab }) {
     setLoading(true);
     e.preventDefault();
     try {
-<<<<<<< HEAD
       const res = await api.post("/api/token/", { username, password });
       localStorage.setItem("ACCESS_TOKEN", res.data.access);
       localStorage.setItem("REFRESH_TOKEN", res.data.refresh);
-=======
-      const res = await api.post("/api/token/", { username: username, password: password });
-      localStorage.setItem(ACCESS_TOKEN, res.data.access);
-      localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
->>>>>>> c71d5301df4f7c94d0bbce39e481e3fefb734cd2
       router.push("/");
     } catch (error) {
       alert("Login failed: " + error.message);
@@ -53,25 +39,8 @@ function Form({ activeTab, setActiveTab }) {
   const handleRegisterSubmit = async (e) => {
     setLoading(true);
     e.preventDefault();
-<<<<<<< HEAD
     try {
       await api.post("/api/user/register/", registerDetails);
-=======
-
-    // Check if passwords match
-    if (registerDetails.password != registerDetails.confirmPassword) {
-      alert("Passwords do not match");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      await api.post("/api/user/register/", {
-        username: registerDetails.username,
-        email: registerDetails.email,
-        password: registerDetails.password,
-      });
->>>>>>> c71d5301df4f7c94d0bbce39e481e3fefb734cd2
       alert("Registration successful");
       setActiveTab("login");
     } catch (error) {
