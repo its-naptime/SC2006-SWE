@@ -3,35 +3,26 @@ from django.shortcuts import render
 from rest_framework import generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from .models import Note
 from .serializers import NoteSerializer, UserSerializer
-
-
-class NoteListCreate(generics.ListCreateAPIView):
-    serializer_class = NoteSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-        return Note.objects.filter(author=user)
-
-    def perform_create(self, serializer):
-        if serializer.is_valid():
-            serializer.save(author=self.request.user)
-        else:
-            print(serializer.errors)
-            
-class NoteDelete(generics.DestroyAPIView):
-    serializer_class = NoteSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-        return Note.objects.filter(author=user)
-
 
 # Create your own views here
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    new_password = serializers.CharField(min_length=8, write_only=True)
+    
+    def validate_new_password(self, value):
+        if not re.search(r'\d', value):  # Check for at least one digit
+            raise serializers.ValidationError("Password must contain at least one digit.")
+        if not re.search(r'[A-Z]', value):  # Check for at least one uppercase letter
+            raise serializers.ValidationError("Password must contain at least one uppercase letter.")        
+        return value
+
