@@ -12,4 +12,7 @@ urlpatterns = [
     path('api/preschool_centre/<int:pk>/', views.PreschoolCentreDetail.as_view()),
     path('api/preschool_charges/', views.PreschoolChargesListCreate.as_view()),
     path('api/preschool_charges/<int:pk>/', views.PreschoolChargesDetail.as_view()),
+    path('api/user_school_search/', views.UserSchoolSearchListCreate.as_view()),
+    path('api/user_preschool_search/', views.UserPreschoolSearchListCreate.as_view()),
+    path('api/user_hdb_search/', views.UserHDBSearchListCreate.as_view()),
 ]

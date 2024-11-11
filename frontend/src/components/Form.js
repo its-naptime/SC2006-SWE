@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
+import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
 import api from "../Api";
 import LoadingIndicator from "./LoadingIndicator"; // Ensure this path is correct
 
@@ -8,11 +9,19 @@ function Form({ activeTab, setActiveTab }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [registerDetails, setRegisterDetails] = useState({
+<<<<<<< HEAD
     name: "",
     username: "",
     email: "",
     password: "",
     confirmPassword: "",
+=======
+    //name: "",
+    username: "",
+    email: "",
+    password: "",
+    //confirmPassword: "",
+>>>>>>> 60491a33e098015ed9c92272a365e23e4c1a42f5
   });
   const router = useRouter();
 
@@ -24,9 +33,15 @@ function Form({ activeTab, setActiveTab }) {
     setLoading(true);
     e.preventDefault();
     try {
+<<<<<<< HEAD
       const res = await api.post("/api/token/", { username, password });
       localStorage.setItem("ACCESS_TOKEN", res.data.access);
       localStorage.setItem("REFRESH_TOKEN", res.data.refresh);
+=======
+      const res = await api.post("/api/token/", { username: username, password: password });
+      localStorage.setItem(ACCESS_TOKEN, res.data.access);
+      localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
+>>>>>>> 60491a33e098015ed9c92272a365e23e4c1a42f5
       router.push("/");
     } catch (error) {
       alert("Login failed: " + error.message);
@@ -38,8 +53,25 @@ function Form({ activeTab, setActiveTab }) {
   const handleRegisterSubmit = async (e) => {
     setLoading(true);
     e.preventDefault();
+<<<<<<< HEAD
     try {
       await api.post("/api/user/register/", registerDetails);
+=======
+
+    // Check if passwords match
+    if (registerDetails.password != registerDetails.confirmPassword) {
+      alert("Passwords do not match");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await api.post("/api/user/register/", {
+        username: registerDetails.username,
+        email: registerDetails.email,
+        password: registerDetails.password,
+      });
+>>>>>>> 60491a33e098015ed9c92272a365e23e4c1a42f5
       alert("Registration successful");
       setActiveTab("login");
     } catch (error) {
