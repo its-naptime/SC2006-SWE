@@ -57,8 +57,9 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "database",
-    "api",
     "search",
+    "api",
+    "catalogue",
 ]
 
 MIDDLEWARE = [
@@ -162,6 +163,14 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+
+GOOGLE_MAPS_API_KEY = os.getenv("NEXT_PUBLIC_API_KEY")
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587

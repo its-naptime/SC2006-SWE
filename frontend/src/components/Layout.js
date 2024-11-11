@@ -34,6 +34,7 @@ const Layout = ({ children }) => {
               <Nav.Link href="/search">Search</Nav.Link>
               <Nav.Link onClick={handleLoginShow}>Login</Nav.Link>
               <Nav.Link onClick={handleRegisterShow}>Register</Nav.Link>
+              <Nav.Link href="/Favourites">Favourites</Nav.Link>
             </Nav>
           </Navbar.Collapse>
         </Container>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ search.town }} - {{ search.flat_type }}</title>
+</head>
+<body>
+    <h1>{{ search.town }} - {{ search.flat_type }}</h1>
+    <p><strong>Month:</strong> {{ search.month }}</p>
+    <p><strong>Block:</strong> {{ search.block }}</p>
+    <p><strong>Street Name:</strong> {{ search.street_name }}</p>
+    <p><strong>Storey Range:</strong> {{ search.storey_range }}</p>
+    <p><strong>Floor Area:</strong> {{ search.floor_area_sqm }} sqm</p>
+    <p><strong>Flat Model:</strong> {{ search.flat_model }}</p>
+    <p><strong>Lease Commence Date:</strong> {{ search.lease_commence_date }}</p>
+    <p><strong>Remaining Lease:</strong> {{ search.remaining_lease }}</p>
+    <p><strong>Resale Price:</strong> ${{ search.resale_price }}</p>
+    <a href="{% url 'user_hdb_search_list' %}">Back to List</a>
+</body>
+</html>

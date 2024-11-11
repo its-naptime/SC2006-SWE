@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ search.centre_name }} - Details</title>
+</head>
+<body>
+    <h1>{{ search.centre_name }}</h1>
+    <p><strong>Centre Address:</strong> {{ search.centre_address }}</p>
+    <p><strong>Postal Code:</strong> {{ search.postal_code }}</p>
+    <p><strong>Telephone No:</strong> {{ search.centre_contact_no }}</p>
+    <p><strong>Email Address:</strong> {{ search.centre_email_address }}</p>
+    <a href="{% url 'user_preschool_search_list' %}">Back to List</a>
+</body>
+</html>
