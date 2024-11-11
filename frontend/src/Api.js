@@ -4,7 +4,7 @@ import { ACCESS_TOKEN } from "./constants";
 const backend = "http://localhost:8000";
 // Create the axios instance first
 const api = axios.create({
-  baseURL: backend
+  baseURL: backend,
   headers: {
     "Content-Type": "application/json",
   },
