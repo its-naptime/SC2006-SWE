@@ -113,7 +113,8 @@ class school_info(models.Model):
     mothertongue1_code = models.CharField(max_length=255)
     mothertongue2_code = models.CharField(max_length=255, blank=True, null=True)
     mothertongue3_code = models.CharField(max_length=255, blank=True, null=True)
-    coordinates = models.CharField(max_length=255, blank=True, null=True)
+    lattitude = models.DecimalField(max_digits=10, decimal_places=7, blank=True, null=True)
+    longitude = models.DecimalField(max_digits=10, decimal_places=7, blank=True, null=True)
 
     def __str__(self):
         return self.school_name
@@ -271,7 +272,8 @@ class UserSchoolSearch(models.Model):
     mothertongue2_code = models.CharField(max_length=255, blank=True, null=True)
     mothertongue3_code = models.CharField(max_length=255, blank=True, null=True)
     search_date = models.DateTimeField(auto_now_add=True)
-    coordinates = models.CharField(max_length=255, blank=True, null=True)
+    lattitude = models.DecimalField(max_digits=10, decimal_places=7, blank=True, null=True)
+    longitude = models.DecimalField(max_digits=10, decimal_places=7, blank=True, null=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.search_query} - {self.school_name}"
