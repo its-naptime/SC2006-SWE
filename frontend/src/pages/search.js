@@ -681,8 +681,11 @@ const Search = () => {
           </Button>
         </div>
 
-        <div className="row w-50 mx-4">
-          <div className="col-2 text-center">
+        <div className="d-flex justify-content-evenly w-25">
+          <div>
+          <p className="px-2">Sort:</p>
+          </div>
+          <div className="mx-2">
             <Button className="px-4"
               variant={searchType === "hdb" ? "primary" : "outline-primary"}
               onClick={() => handleSearchTypeChange("hdb")}
@@ -690,7 +693,7 @@ const Search = () => {
               HDB
             </Button>
           </div>
-          <div className="col-2 text-center">
+          <div className="mx-2">
             <Button
               variant={searchType === "school" ? "primary" : "outline-primary"}
               onClick={() => handleSearchTypeChange("school")}
@@ -698,7 +701,7 @@ const Search = () => {
               Schools
             </Button>
           </div>
-          <div className="col-2 text-center">
+          <div className="mx-2">
             <Button
               variant={
                 searchType === "preschool" ? "primary" : "outline-primary"
