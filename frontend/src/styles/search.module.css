@@ -392,3 +392,6 @@
   line-height: 1.2;
   max-width: 200px; /* Prevents badges from getting too wide */
 }
+.searchTypeSelector{
+  padding: 100px;
+}
