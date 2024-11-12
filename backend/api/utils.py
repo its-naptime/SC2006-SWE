@@ -22,7 +22,7 @@ def send_password_reset_email(user):
     uid, token = generate_password_reset_token(user)
     
     # Construct the reset URL
-    reset_url = f"localhost:3000/reset-password?uid={uid}&token={token}"
+    reset_url = f"localhost:3000/ResetPassword?uid={uid}&token={token}"
     
     # Send the email
     send_mail(
