@@ -2,7 +2,8 @@ import axios from "axios";
 import { ACCESS_TOKEN } from "./constants";
 
 const backend = "http://localhost:8000";
-// Create the axios instance first
+
+// Create an instance for authenticated requests
 const api = axios.create({
   baseURL: backend,
   headers: {
@@ -10,7 +11,15 @@ const api = axios.create({
   },
 });
 
-// Then add the interceptors
+// Create a separate instance for public endpoints
+const publicApi = axios.create({
+  baseURL: backend,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Add auth interceptor only to the main api instance
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem(ACCESS_TOKEN);
@@ -26,7 +35,8 @@ api.interceptors.request.use(
 
 export const checkHealth = async () => {
   try {
-    const response = await api.get("/api/health/");
+    // Use publicApi for health check
+    const response = await publicApi.get("/api/health/");
     console.log("Health status:", response.data);
     return response.data;
   } catch (error) {
@@ -34,4 +44,5 @@ export const checkHealth = async () => {
   }
 };
 
+export { publicApi };
 export default api;

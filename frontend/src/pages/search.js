@@ -5,7 +5,6 @@ import Image from "next/image";
 import axios from "axios";
 import { Button, Form } from "react-bootstrap";
 import { X } from "lucide-react";
-import Layout from "../components/Layout";
 import Map from "../components/Map";
 import styles from "../styles/Search.module.css";
 import {
@@ -630,8 +629,6 @@ const Search = () => {
 
   return (
     <div className={styles.container}>
-      <Layout />
-
       <header className={styles.header}>
         <div className={styles.searchBar}>
           <Link href="/">

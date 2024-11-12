@@ -1,12 +1,10 @@
+// src/pages/index.js
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import styles from "../styles/Index.module.css";
 import Link from "next/link";
 import "bootstrap/dist/css/bootstrap.min.css";
-//import NavList from "../components/NavList";
-import Sidebar from "../components/Sidebar";
 import { checkHealth } from "../Api";
-import Layout from "../components/Layout";
 
 const Index = () => {
   const [connectionStatus, setConnectionStatus] = useState(null);
@@ -26,11 +24,12 @@ const Index = () => {
         setConnectionStatus("error");
       });
   }, []);
+
   return (
     <div className={styles.pageContainer}>
-      <Layout>
-      </Layout>
-      {/* temporary health check, REMOVE LATER */}
+      {/* Remove the Layout component from here */}
+      
+      {/* Connection status indicator */}
       {connectionStatus && (
         <div
           style={{
@@ -64,17 +63,14 @@ const Index = () => {
             : "Backend connection failed"}
         </div>
       )}
-      {/* Top Section: Site Name with Background */}
-      {/*<header className={styles.header}>
-        <p className={`text-left ${styles.siteName}`}> KickStart </p>
-      </header>*/}
 
       <img
-        src="/images/home.jpg" // Path to your image
+        src="/images/home.jpg"
         alt="Example Image"
-        className={styles.imageClass} // Add the class here
+        className={styles.imageClass}
       />
-      {/* Middle Section: Main Content */}
+
+      {/* Main Content */}
       <main className={styles.mainContent}>
         <h2 className={styles.subheading}>Find the perfect</h2>
         <h1 className={styles.mainHeading}>
@@ -100,7 +96,7 @@ const Index = () => {
           </span>
           .
         </p>
-        <Link href="search">
+        <Link href="/search">
           <button className={`rounded-pill ${styles.startButton}`}>
             Start Now{" "}
             <span role="img" aria-label="rocket">
@@ -109,23 +105,6 @@ const Index = () => {
           </button>
         </Link>
       </main>
-      {/*
-
-      <footer className={styles.footer}>
-        <Link href="/" className={styles.navItem}>
-          <span role="img" aria-label="home" className={styles.navIcon}>
-            🏠
-          </span>
-          <p className={styles.navText}>Home</p>
-        </Link>
-        <Link href="/search" className={styles.navItem}>
-          <span role="img" aria-label="explore" className={styles.navIcon}>
-            💻
-          </span>
-          <p className={styles.navText}>Explore</p>
-        </Link>
-      </footer>
-      */}
     </div>
   );
 };

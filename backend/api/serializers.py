@@ -7,6 +7,13 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ["id", "username", "email", "password"]
         extra_kwargs = {"password": {"write_only": True}}
+
+    def to_representation(self, instance):
+        """Customize the output representation"""
+        representation = super().to_representation(instance)
+        if self.context.get('include_auth_token'):
+            representation['username'] = instance.username
+        return representation
     
     def create(self, validated_data):
         print(validated_data)

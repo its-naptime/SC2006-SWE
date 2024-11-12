@@ -1,64 +1,79 @@
+// src/components/Form.js
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
-import api from "../Api";
-import LoadingIndicator from "./LoadingIndicator"; // Ensure this path is correct
+import { useAuth } from "../AuthContext";
+import LoadingIndicator from "./LoadingIndicator";
+import { publicApi } from "../Api";
 
-function Form({ activeTab, setActiveTab }) {
+function Form({ activeTab, setActiveTab, onClose }) {
   const [loading, setLoading] = useState(false);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [registerDetails, setRegisterDetails] = useState({
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+  const [formData, setFormData] = useState({
+    login: {
+      username: "",
+      password: "",
+      rememberMe: false
+    },
+    register: {
+      username: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+    reset: {
+      email: "",
+    }
   });
-  const [resetEmail, setResetEmail] = useState(""); // New state for reset password email
-  const [showResetPassword, setShowResetPassword] = useState(false); // Control reset password form visibility
+  const [showResetPassword, setShowResetPassword] = useState(false);
   const router = useRouter();
+  const { login } = useAuth();
+
+  const handleInputChange = (form, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [form]: {
+        ...prev[form],
+        [field]: value
+      }
+    }));
+  };
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);
-    setShowResetPassword(false); // Hide reset form when switching to login/register tabs
-  };
-
-  const handleForgotPasswordClick = (e) => {
-    e.preventDefault();
-    setShowResetPassword(true); // Show reset password form
+    setShowResetPassword(false);
   };
 
   const handleLoginSubmit = async (e) => {
-    setLoading(true);
     e.preventDefault();
+    setLoading(true);
     try {
-      const res = await api.post("/api/token/", { username: username, password: password });
-      localStorage.setItem(ACCESS_TOKEN, res.data.access);
-      localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
+      const res = await publicApi.post("/api/token/", {
+        username: formData.login.username,
+        password: formData.login.password
+      });
+      await login(res.data);
+      onClose();
       router.push("/");
-      alert("Login successful");
     } catch (error) {
-      alert("Login failed: " + error.message);
+      console.error('Login error:', error);
+      alert("Login failed: " + (error.response?.data?.detail || error.message));
     } finally {
       setLoading(false);
     }
   };
 
   const handleRegisterSubmit = async (e) => {
-    setLoading(true);
     e.preventDefault();
-
-    if (registerDetails.password !== registerDetails.confirmPassword) {
+    if (formData.register.password !== formData.register.confirmPassword) {
       alert("Passwords do not match");
-      setLoading(false);
       return;
     }
 
+    setLoading(true);
     try {
-      await api.post("/api/user/register/", {
-        username: registerDetails.username,
-        email: registerDetails.email,
-        password: registerDetails.password,
+      await publicApi.post("/api/user/register/", {
+        username: formData.register.username,
+        email: formData.register.email,
+        password: formData.register.password,
       });
       alert("Registration successful");
       setActiveTab("login");
@@ -70,10 +85,12 @@ function Form({ activeTab, setActiveTab }) {
   };
 
   const handleResetPasswordSubmit = async (e) => {
-    setLoading(true);
     e.preventDefault();
+    setLoading(true);
     try {
-      await api.post("/api/user/password-reset/", { email: resetEmail });
+      await publicApi.post("/api/user/password-reset/", {
+        email: formData.reset.email
+      });
       alert("Password reset link sent to your email");
       setShowResetPassword(false);
       setActiveTab("login");
@@ -85,224 +102,209 @@ function Form({ activeTab, setActiveTab }) {
   };
 
   return (
-    <div>
-      <ul className="nav nav-pills nav-justified mb-3 my-3" id="ex1" role="tablist">
+    <div className="form-container">
+      {/* Tab Navigation */}
+      <ul className="nav nav-pills nav-justified mb-3" role="tablist">
         <li className="nav-item" role="presentation">
-          <a
+          <button
             className={`nav-link ${activeTab === "login" ? "active" : ""}`}
-            id="tab-login"
-            href="#pills-login"
-            role="tab"
-            aria-controls="pills-login"
-            aria-selected={activeTab === "login"}
-            onClick={(e) => {
-              e.preventDefault();
-              handleTabClick("login");
-            }}
+            onClick={() => handleTabClick("login")}
+            type="button"
           >
             Login
-          </a>
+          </button>
         </li>
         <li className="nav-item" role="presentation">
-          <a
+          <button
             className={`nav-link ${activeTab === "register" ? "active" : ""}`}
-            id="tab-register"
-            href="#pills-register"
-            role="tab"
-            aria-controls="pills-register"
-            aria-selected={activeTab === "register"}
-            onClick={(e) => {
-              e.preventDefault();
-              handleTabClick("register");
-            }}
+            onClick={() => handleTabClick("register")}
+            type="button"
           >
             Register
-          </a>
+          </button>
         </li>
       </ul>
 
-      <div className="tab-content">
-        {activeTab === "login" && !showResetPassword && (
-          <div className="tab-pane fade show active" id="pills-login" role="tabpanel">
-            <form onSubmit={handleLoginSubmit}>
-              <div className="form-outline mb-4 p-2">
-                <label className="form-label" htmlFor="loginName">Username</label>
-                <input
-                  type="text"
-                  id="loginName"
-                  className="form-control"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Username"
-                />
-              </div>
-
-              <div className="form-outline mb-4 p-2">
-                <label className="form-label" htmlFor="loginPassword">Password</label>
-                <input
-                  type="password"
-                  id="loginPassword"
-                  className="form-control"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Password"
-                />
-              </div>
-
-              <div className="row p-2">
-                <div className="col-md-6 d-flex justify-content-center">
-                  <div className="form-check mb-3 mb-md-0">
-                    <input className="form-check-input" type="checkbox" id="loginCheck" />
-                    <label className="form-check-label" htmlFor="loginCheck">Remember me</label>
-                  </div>
-                </div>
-                <div className="col-md-6 d-flex justify-content-center">
-                  <a href="#!" onClick={handleForgotPasswordClick}>Forgot password?</a>
-                </div>
-              </div>
-
-              {loading && <LoadingIndicator />}
-              <div className="text-center py-4">
-                <button type="submit" className="btn btn-primary btn-block mb-4">Sign in</button>
-              </div>
-
-              <div className="text-center">
-                <p>
-                  Not a member?{" "}
-                  <a href="#!" onClick={(e) => { e.preventDefault(); handleTabClick("register"); 
-                  }}
-                  >
-                    Register
-                  </a>
-                </p>
-              </div>
-            </form>
+      {/* Login Form */}
+      {activeTab === "login" && !showResetPassword && (
+        <form onSubmit={handleLoginSubmit} className="login-form">
+          <div className="form-group mb-3">
+            <label htmlFor="loginUsername" className="form-label">Username</label>
+            <input
+              type="text"
+              id="loginUsername"
+              className="form-control"
+              value={formData.login.username}
+              onChange={(e) => handleInputChange("login", "username", e.target.value)}
+              required
+            />
           </div>
-        )}
 
-        {activeTab === "register" && (
-          <div className="tab-pane fade show active" id="pills-register" role="tabpanel">
-            <form onSubmit={handleRegisterSubmit}>
-                <div className="form-outline mb-4 p-2">
-                <label className="form-label" htmlFor="registerUsername">
-                  Username
-                </label>
-                <input
-                  type="text"
-                  id="registerUsername"
-                  className="form-control"
-                  value={registerDetails.username}
-                  onChange={(e) =>
-                    setRegisterDetails({ ...registerDetails, username: e.target.value })
-                  }
-                  placeholder="Username"
-                />
-              </div>
-  
-              <div className="form-outline mb-4 p-2">
-                <label className="form-label" htmlFor="registerEmail">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="registerEmail"
-                  className="form-control"
-                  value={registerDetails.email}
-                  onChange={(e) =>
-                    setRegisterDetails({ ...registerDetails, email: e.target.value })
-                  }
-                  placeholder="Email"
-                />
-              </div>
-  
-              <div className="form-outline mb-4 p-2">
-                <label className="form-label" htmlFor="registerPassword">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  id="registerPassword"
-                  className="form-control"
-                  value={registerDetails.password}
-                  onChange={(e) =>
-                    setRegisterDetails({ ...registerDetails, password: e.target.value })
-                  }
-                  placeholder="Password"
-                />
-              </div>
-  
-              <div className="form-outline mb-4 p-2">
-                <label className="form-label" htmlFor="registerConfirmPassword">
-                  Confirm password
-                </label>
-                <input
-                  type="password"
-                  id="registerConfirmPassword"
-                  className="form-control"
-                  value={registerDetails.confirmPassword}
-                  onChange={(e) =>
-                    setRegisterDetails({ ...registerDetails, confirmPassword: e.target.value })
-                  }
-                  placeholder="Confirm password"
-                />
-              </div>
-              
-              {loading && <LoadingIndicator />}
-              <div className="text-center py-4">
-                <button type="submit" className="btn btn-primary btn-block mb-3">
-                  Register
-                </button>
-              </div>
-  
-              <div className="text-center">
-                <p>
-                  Already a member?{" "}
-                  <a
-                    href="#!"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleTabClick("login");
-                    }}
-                  >
-                    Login
-                  </a>
-                </p>
-              </div>
-            </form>
+          <div className="form-group mb-3">
+            <label htmlFor="loginPassword" className="form-label">Password</label>
+            <input
+              type="password"
+              id="loginPassword"
+              className="form-control"
+              value={formData.login.password}
+              onChange={(e) => handleInputChange("login", "password", e.target.value)}
+              required
+            />
           </div>
-        )}
 
-        {showResetPassword && (
-          <div className="tab-pane fade show active" id="pills-resetPassword" role="tabpanel">
-            <h2>Reset Password</h2>
-            <form onSubmit={handleResetPasswordSubmit}>
-              <div className="form-outline mb-4 p-2">
-                <label className="form-label" htmlFor="resetEmail">Email</label>
+          <div className="row mb-4">
+            <div className="col-6">
+              <div className="form-check">
                 <input
-                  type="email"
-                  id="resetEmail"
-                  className="form-control"
-                  value={resetEmail}
-                  onChange={(e) => setResetEmail(e.target.value)}
-                  placeholder="Enter your email"
+                  type="checkbox"
+                  id="rememberMe"
+                  className="form-check-input"
+                  checked={formData.login.rememberMe}
+                  onChange={(e) => handleInputChange("login", "rememberMe", e.target.checked)}
                 />
+                <label className="form-check-label" htmlFor="rememberMe">
+                  Remember me
+                </label>
               </div>
-
-              {loading && <LoadingIndicator />}
-              <div className="text-center py-4">
-                <button type="submit" className="btn btn-primary btn-block mb-3">Send Reset Link</button>
-              </div>
-
-              <div className="text-center">
-                <a href="#!" onClick={(e) => { e.preventDefault(); handleTabClick("login"); }}>Back to Login</a>
-              </div>
-            </form>
+            </div>
+            <div className="col-6 text-end">
+              <button
+                type="button"
+                className="btn btn-link p-0"
+                onClick={() => setShowResetPassword(true)}
+              >
+                Forgot password?
+              </button>
+            </div>
           </div>
-        )}
-      </div>
+
+          {loading && <LoadingIndicator />}
+
+          <button type="submit" className="btn btn-primary w-100 mb-3" disabled={loading}>
+            Sign In
+          </button>
+
+          <div className="text-center">
+            <p>
+              Not a member?{" "}
+              <button
+                type="button"
+                className="btn btn-link p-0"
+                onClick={() => handleTabClick("register")}
+              >
+                Register
+              </button>
+            </p>
+          </div>
+        </form>
+      )}
+
+      {/* Register Form */}
+      {activeTab === "register" && (
+        <form onSubmit={handleRegisterSubmit} className="register-form">
+          <div className="form-group mb-3">
+            <label htmlFor="registerUsername" className="form-label">Username</label>
+            <input
+              type="text"
+              id="registerUsername"
+              className="form-control"
+              value={formData.register.username}
+              onChange={(e) => handleInputChange("register", "username", e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="form-group mb-3">
+            <label htmlFor="registerEmail" className="form-label">Email</label>
+            <input
+              type="email"
+              id="registerEmail"
+              className="form-control"
+              value={formData.register.email}
+              onChange={(e) => handleInputChange("register", "email", e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="form-group mb-3">
+            <label htmlFor="registerPassword" className="form-label">Password</label>
+            <input
+              type="password"
+              id="registerPassword"
+              className="form-control"
+              value={formData.register.password}
+              onChange={(e) => handleInputChange("register", "password", e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="form-group mb-4">
+            <label htmlFor="registerConfirmPassword" className="form-label">Confirm Password</label>
+            <input
+              type="password"
+              id="registerConfirmPassword"
+              className="form-control"
+              value={formData.register.confirmPassword}
+              onChange={(e) => handleInputChange("register", "confirmPassword", e.target.value)}
+              required
+            />
+          </div>
+
+          {loading && <LoadingIndicator />}
+
+          <button type="submit" className="btn btn-primary w-100 mb-3" disabled={loading}>
+            Register
+          </button>
+
+          <div className="text-center">
+            <p>
+              Already a member?{" "}
+              <button
+                type="button"
+                className="btn btn-link p-0"
+                onClick={() => handleTabClick("login")}
+              >
+                Login
+              </button>
+            </p>
+          </div>
+        </form>
+      )}
+
+      {/* Reset Password Form */}
+      {showResetPassword && (
+        <form onSubmit={handleResetPasswordSubmit} className="reset-password-form">
+          <div className="form-group mb-4">
+            <label htmlFor="resetEmail" className="form-label">Email</label>
+            <input
+              type="email"
+              id="resetEmail"
+              className="form-control"
+              value={formData.reset.email}
+              onChange={(e) => handleInputChange("reset", "email", e.target.value)}
+              required
+            />
+          </div>
+
+          {loading && <LoadingIndicator />}
+
+          <button type="submit" className="btn btn-primary w-100 mb-3" disabled={loading}>
+            Send Reset Link
+          </button>
+
+          <div className="text-center">
+            <button
+              type="button"
+              className="btn btn-link"
+              onClick={() => setShowResetPassword(false)}
+            >
+              Back to Login
+            </button>
+          </div>
+        </form>
+      )}
     </div>
   );
 }
-
 
 export default Form;

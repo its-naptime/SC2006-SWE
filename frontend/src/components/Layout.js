@@ -1,77 +1,125 @@
-// components/Layout.js
-import React, { useState, useContext } from 'react';
+// src/components/Layout.js
+import React, { useState } from 'react';
 import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
+import NavDropdown from 'react-bootstrap/NavDropdown';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import Form from '../components/Form'; // Import the Form component
-import { AuthContext, AuthProvider } from '../AuthContext'; // Import the AuthContext
+import Form from './Form';
+import { useAuth } from '../AuthContext';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Layout = ({ children }) => {
+  const router = useRouter();
   const [showModal, setShowModal] = useState(false);
-  const [activeTab, setActiveTab] = useState('login'); // 'login' or 'register'
-
-  const { isAuthenticated } = useContext(AuthContext); // Access the authentication status
+  const [activeTab, setActiveTab] = useState('login');
+  const { isAuthenticated, user, logout } = useAuth();
 
   const handleModalClose = () => setShowModal(false);
+  
   const handleLoginShow = () => {
     setActiveTab('login');
     setShowModal(true);
   };
+  
   const handleRegisterShow = () => {
     setActiveTab('register');
     setShowModal(true);
   };
-
-  const handleLogout = () => {
-    logout(); // Call the logout method from AuthContext
-    setShowModal(false); // Close the modal after logout
+  
+  const handleLogout = async () => {
+    logout();
+    localStorage.clear();
+    await router.push('/');
   };
 
   return (
-    <>
-      <Navbar bg="dark" variant="dark" expand="lg">
-        <Container className='mx-4'>
-          <Navbar.Brand className='px-4' href="/">Kickstart</Navbar.Brand>
+    <div className="min-h-screen d-flex flex-column">
+      <Navbar bg="dark" variant="dark" expand="lg" className="mb-3">
+        <Container>
+          <Link href="/" passHref legacyBehavior>
+            <Navbar.Brand className='px-4'>Kickstart</Navbar.Brand>
+          </Link>
+          
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
-              <Nav.Link href="/">Home</Nav.Link>
-              <Nav.Link href="/search">Search</Nav.Link>
+              <Link href="/" passHref legacyBehavior>
+                <Nav.Link active={router.pathname === "/"}>Home</Nav.Link>
+              </Link>
+              <Link href="/search" passHref legacyBehavior>
+                <Nav.Link active={router.pathname === "/search"}>Search</Nav.Link>
+              </Link>
+
               {!isAuthenticated ? (
                 <>
-                  <Nav.Link onClick={handleLoginShow}>Login</Nav.Link>
-                  <Nav.Link onClick={handleRegisterShow}>Register</Nav.Link>
+                  <Nav.Link 
+                    onClick={handleLoginShow} 
+                    style={{ cursor: 'pointer' }}
+                  >
+                    Login
+                  </Nav.Link>
+                  <Nav.Link 
+                    onClick={handleRegisterShow} 
+                    style={{ cursor: 'pointer' }}
+                  >
+                    Register
+                  </Nav.Link>
                 </>
               ) : (
                 <>
-                  <Nav.Link href="/Favourites">Favourites</Nav.Link>
-                  <Nav.Link onClick={handleLogout}>Logout</Nav.Link>
+                  <Link href="/favourites" passHref legacyBehavior>
+                    <Nav.Link active={router.pathname === "/favourites"}>
+                      Favourites
+                    </Nav.Link>
+                  </Link>
+                  <NavDropdown 
+                    title={user?.username || 'Account'} 
+                    id="basic-nav-dropdown"
+                  >
+                    <Link href="/profile" passHref legacyBehavior>
+                      <NavDropdown.Item>Profile</NavDropdown.Item>
+                    </Link>
+                    <NavDropdown.Divider />
+                    <NavDropdown.Item onClick={handleLogout}>
+                      Logout
+                    </NavDropdown.Item>
+                  </NavDropdown>
                 </>
               )}
-              <Nav.Link href="/Favourites">Favourites</Nav.Link>
-            </Nav>            
+            </Nav>
           </Navbar.Collapse>
         </Container>
       </Navbar>
 
-      {/* Modal for Login and Register */}
       <Modal show={showModal} onHide={handleModalClose} centered>
         <Modal.Header closeButton>
-          <Modal.Title>{activeTab === 'login' ? 'Login' : 'Register'}</Modal.Title>
+          <Modal.Title>
+            {activeTab === 'login' ? 'Login' : 'Register'}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form activeTab={activeTab} setActiveTab={setActiveTab} />
+          <Form 
+            activeTab={activeTab} 
+            setActiveTab={setActiveTab} 
+            onClose={handleModalClose} 
+          />
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleModalClose}>
-            Close
-          </Button>
-        </Modal.Footer>
       </Modal>
-    </>
+
+      <main className="container flex-grow-1 mt-4">
+        {children}
+      </main>
+
+      <footer className="mt-auto py-3 bg-dark text-light">
+        <Container className="text-center">
+          <p className="mb-0">© 2024 Kickstart. All rights reserved.</p>
+        </Container>
+      </footer>
+    </div>
   );
 };
 
