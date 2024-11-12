@@ -73,7 +73,7 @@ function Form({ activeTab, setActiveTab }) {
     setLoading(true);
     e.preventDefault();
     try {
-      await api.post("/api/user/reset-password/", { email: resetEmail });
+      await api.post("/api/user/password-reset/", { email: resetEmail });
       alert("Password reset link sent to your email");
       setShowResetPassword(false);
       setActiveTab("login");
