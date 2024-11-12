@@ -13,13 +13,9 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
   });
   const [isLoadingNearby, setIsLoadingNearby] = useState(false);
   const [reviews, setReviews] = useState([]);
-const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const [placeDetails, setPlaceDetails] = useState(null);
 
-useEffect(() => {
-  if (activeTab === 'reviews' && item && type !== 'hdb') {
-    fetchReviews();
-  }
-}, [activeTab, item, type]);
   useEffect(() => {
     if (!show) {
       setActiveTab('details');
@@ -86,18 +82,33 @@ useEffect(() => {
     }
   };
 
-  const fetchReviews = async () => {
+  // Fetch place details and reviews
+  const fetchPlaceAndReviews = async () => {
     setIsLoadingReviews(true);
     try {
-      // Replace with the appropriate API endpoint or method for fetching reviews
-      const response = await axios.get(`http://localhost:8000/api/reviews/${item.id}`);
-      setReviews(response.data.reviews || []);
+      const [placeResponse, reviewsResponse] = await Promise.all([
+        axios.get(`http://localhost:8000/api/place/`, {
+          params: { place_id: item.id } // Adjust as needed
+        }),
+        axios.get(`http://localhost:8000/api/review/`, {
+          params: { place: item.id } // Adjust as needed
+        })
+      ]);
+
+      setPlaceDetails(placeResponse.data[0]); // Assuming response is an array of places
+      setReviews(reviewsResponse.data || []);
     } catch (error) {
-      console.error('Error fetching reviews:', error);
+      console.error('Error fetching place details or reviews:', error);
     } finally {
       setIsLoadingReviews(false);
     }
   };
+
+  useEffect(() => {
+    if (activeTab === 'reviews' && item && type !== 'hdb') {
+      fetchPlaceAndReviews();
+    }
+  }, [activeTab, item, type]);
   
 
   const handleViewMap = (targetItem) => {
@@ -224,27 +235,6 @@ useEffect(() => {
           </div>
         );
       }
-      const renderReview = (review) => (
-        <div key={review.time} className="p-3 border-bottom">
-          <div className="d-flex align-items-center mb-2">
-            <Image
-              src={review.profile_photo_url}
-              alt={review.author_name}
-              width={32}
-              height={32}
-              className="rounded-circle"
-            />
-            <div className="ms-2">
-              <a href={review.author_url} target="_blank" rel="noopener noreferrer">
-                <strong>{review.author_name}</strong>
-              </a>
-              <p className="mb-0 text-muted">{review.relative_time_description}</p>
-            </div>
-          </div>
-          <p className="mb-1">{review.text}</p>
-          <p className="mb-0"><strong>Rating:</strong> {review.rating} / 5</p>
-        </div>
-      );
       
       return (
         <div className={styles.nearbyContainer}>
@@ -295,6 +285,29 @@ useEffect(() => {
       );
     }
   };
+
+  const renderReview = (review) => (
+    <div key={review.id} className="p-3 border-bottom">
+      <div className="d-flex align-items-center mb-2">
+        <div className="ms-2">
+          <a href={review.author_url} target="_blank" rel="noopener noreferrer">
+            <strong>{review.author_name}</strong>
+          </a>
+          <p className="mb-0 text-muted">{review.relative_time_description}</p>
+        </div>
+      </div>
+      <p className="mb-1">{review.text}</p>
+      <p className="mb-0"><strong>Rating:</strong> {review.rating} / 5</p>
+    </div>
+  );
+
+  const renderPlaceDetails = () => (
+    <div className="p-3">
+      <h5>Place Details</h5>
+      <p><strong>Name:</strong> {placeDetails?.name}</p>
+      <p><strong>Rating:</strong> {placeDetails?.rating} / 5</p>
+    </div>
+  );
 
   return (
     <Modal 
@@ -351,26 +364,30 @@ useEffect(() => {
       </div>
     </Tab>
 
-    {/* Render the Reviews tab only if the type is not 'hdb' */}
     {type !== 'hdb' && (
-      <Tab eventKey="reviews" title="Reviews">
-        <div className="p-4">
-          {isLoadingReviews ? (
-            <div className="text-center p-4">
-              <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">Loading...</span>
+            <Tab eventKey="reviews" title="Reviews">
+              <div className="p-4">
+                {isLoadingReviews ? (
+                  <div className="text-center p-4">
+                    <div className="spinner-border text-primary" role="status">
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {placeDetails && renderPlaceDetails()}
+                    {reviews.length > 0 ? (
+                      <div>
+                        {reviews.map(renderReview)}
+                      </div>
+                    ) : (
+                      <p className="text-center text-muted">No reviews found</p>
+                    )}
+                  </>
+                )}
               </div>
-            </div>
-          ) : reviews.length > 0 ? (
-            <div>
-              {reviews.map(renderReview)}
-            </div>
-          ) : (
-            <p className="text-center text-muted">No reviews found</p>
+            </Tab>
           )}
-        </div>
-      </Tab>
-    )}
   </Tabs>
 </Modal.Body>
 
