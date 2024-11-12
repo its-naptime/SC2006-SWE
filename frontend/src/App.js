@@ -10,6 +10,7 @@ import About from "./pages/about";
 import Search from "./pages/Search";
 import ResetPassword from "./pages/ResetPassword";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"; // Ensure you're using this if working with routing
+import { AuthProvider } from '../AuthContext'; // Import the AuthProvider
 
 function Logout() {
   localStorage.clear();
@@ -23,20 +24,22 @@ function RegisterAndLogout() {
 
 function App() {
   return (
-    <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/search" element={<Search />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<RegisterAndLogout />} />
-          <Route path="/logout" element={<Logout />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Layout>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/search" element={<Search />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<RegisterAndLogout />} />
+            <Route path="/logout" element={<Logout />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Layout>
+      </Router>
+    </AuthProvider>  
   );
 }
 
