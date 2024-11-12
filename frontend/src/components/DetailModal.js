@@ -84,7 +84,8 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
       setIsLoadingNearby(false);
     }
   };
-
+  {
+    /*
   // Fetch place details and reviews
   const fetchPlaceAndReviews = async () => {
     setIsLoadingReviews(true);
@@ -112,58 +113,79 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
       fetchPlaceAndReviews();
     }
   }, [activeTab, item, type]);
-
+*/
+  }
   // Google Review fetcher
   useEffect(() => {
-    if (activeTab === 'reviews' && item && type !== 'hdb') {
-      console.log('Fetching reviews for:', item);
+    if (activeTab === "reviews" && item && type !== "hdb") {
+      console.log("useEffect triggered for fetching reviews. Item:", item);
       fetchReviews(item.centre_name || item.school_name);
     }
   }, [activeTab, item, type]);
 
   const fetchReviews = async (locationName) => {
-    console.log('Searching for Place ID with place_name:', locationName);
+    console.log("fetchReviews called with locationName:", locationName); // Log when the function is called
     setIsLoadingReviews(true);
-  
+
     try {
       // Replace with your Google API Key
       const googleApiKey = process.env.NEXT_PUBLIC_API_KEY;
-  
+      console.log("Google API Key:", googleApiKey); // Check if the API key is available
+
       // Step 1: Get the Place ID
-      const placeResponse = await axios.get('https://maps.googleapis.com/maps/api/place/findplacefromtext/json', {
-        params: {
-          input: locationName,
-          inputtype: 'textquery',
-          fields: 'place_id',
-          key: googleApiKey,
-        },
-      });
-  
+      console.log("Sending request to get Place ID...");
+      const placeResponse = await axios.get(
+        "https://maps.googleapis.com/maps/api/place/findplacefromtext/json",
+        {
+          params: {
+            input: locationName,
+            inputtype: "textquery",
+            fields: "place_id",
+            key: googleApiKey,
+          },
+        }
+      );
+      console.log("Place ID response:", placeResponse.data); // Log the response for the Place ID
+
       if (placeResponse.data.candidates.length > 0) {
         const placeId = placeResponse.data.candidates[0].place_id;
-        console.log('Place ID found:', placeId);
-  
+        console.log("Place ID found:", placeId);
+
         // Step 2: Fetch the reviews using the Place ID
-        const reviewResponse = await axios.get('https://maps.googleapis.com/maps/api/place/details/json', {
-          params: {
-            place_id: placeId,
-            fields: 'reviews,rating',
-            key: process.env.NEXT_PUBLIC_API_KEY,
-          },
+        console.log("Sending request to get reviews for Place ID:", placeId);
+        const reviewResponse = await axios.get(
+          "https://maps.googleapis.com/maps/api/place/details/json",
+          {
+            params: {
+              place_id: placeId,
+              fields: "reviews,rating",
+              key: googleApiKey,
+            },
+          }
+        );
+        console.log("Review response:", reviewResponse.data); // Log the response for the reviews
+
+        const result = reviewResponse.data.result;
+        setPlaceDetails({
+          name: locationName,
+          rating: result.rating, // Add the rating to the state
         });
-  
-        setReviews(reviewResponse.data.result.reviews || []);
+
+        setReviews(result.reviews || []);
+        console.log("Reviews set:", result.reviews);
       } else {
-        console.warn('No Place ID found for', locationName);
+        console.warn("No Place ID found for", locationName);
+        setPlaceDetails(null); // Reset if no place details are found
         setReviews([]);
       }
     } catch (error) {
-      console.error('Error fetching reviews from Google:', error);
+      console.error("Error fetching reviews from Google:", error);
     } finally {
       setIsLoadingReviews(false);
+      console.log("Fetching reviews finished.");
     }
   };
-  
+
   // Google review fetcher
 
   const handleViewMap = (targetItem) => {
@@ -368,8 +390,8 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
     }
   };
   // Google Review fetcher
-  const renderReview = (review) => (
-    <div key={review.id} className="p-3 border-bottom">
+  const renderReview = (review, index) => (
+    <div key={review.id || index} className="p-3 border-bottom">
       <div className="d-flex align-items-center mb-2">
         <Image
           src={review.profile_photo_url}
@@ -386,7 +408,9 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
         </div>
       </div>
       <p className="mb-1">{review.text}</p>
-      <p className="mb-0"><strong>Rating:</strong> {review.rating} / 5</p>
+      <p className="mb-0">
+        <strong>Rating:</strong> {review.rating} / 5
+      </p>
     </div>
   );
 
@@ -432,6 +456,9 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
             : type === "school"
             ? item?.school_name
             : item?.centre_name}
+          {activeTab === "reviews" && placeDetails?.rating && (
+            <span className="text-muted ml-2">({placeDetails.rating} / 5)</span>
+          )}
         </Modal.Title>
       </Modal.Header>
 
@@ -454,14 +481,29 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
               />
 
               <DetailContent item={item} type={type} />
-
-              <Button
-                variant="primary"
-                onClick={() => handleViewMap(item)}
-                className="w-full mt-4"
-              >
-                View Location on Map
-              </Button>
+              <div className="d-flex">
+                <div className="me-auto">
+                  <Button
+                    variant="primary"
+                    onClick={() => handleViewMap(item)}
+                    className=" mt-4"
+                  >
+                    View Location on Map
+                  </Button>
+                </div>
+                <div className="">
+                  <a
+                    href={`https://www.propertyguru.com.sg/property-for-sale?market=residential&freetext=${encodeURIComponent(
+                      item?.street_name || ""
+                    )}&listing_type=sale&search=true`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-secondary mt-4 text-right"
+                  >
+                    Search Property on PropertyGuru
+                  </a>
+                </div>
+              </div>
             </div>
           </Tab>
 
@@ -503,27 +545,25 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
           */}
           {/* Render the Reviews tab only if the type is not 'hdb' */}
           {type !== "hdb" && (
-            <Tab 
-            eventKey="reviews" 
-            title="Reviews"
-            disabled={type === 'hdb'} // Hide Reviews tab for HDB
-          >
-            <div className="p-4">
-              {isLoadingReviews ? (
-                <div className="text-center p-4">
-                  <div className="spinner-border text-primary" role="status">
-                    <span className="visually-hidden">Loading...</span>
+            <Tab
+              eventKey="reviews"
+              title="Reviews"
+              disabled={type === "hdb"} // Hide Reviews tab for HDB
+            >
+              <div className="p-4">
+                {isLoadingReviews ? (
+                  <div className="text-center p-4">
+                    <div className="spinner-border text-primary" role="status">
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
                   </div>
-                </div>
-              ) : reviews.length > 0 ? (
-                <div>
-                  {reviews.map(renderReview)}
-                </div>
-              ) : (
-                <p className="text-center text-muted">No reviews found</p>
-              )}
-            </div>
-          </Tab>
+                ) : reviews.length > 0 ? (
+                  <div>{reviews.map(renderReview)}</div>
+                ) : (
+                  <p className="text-center text-muted">No reviews found</p>
+                )}
+              </div>
+            </Tab>
           )}
         </Tabs>
       </Modal.Body>
