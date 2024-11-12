@@ -9,22 +9,15 @@ import NotFound from "./pages/NotFound";
 import About from "./pages/about";
 import Search from "./pages/Search";
 import ResetPassword from "./pages/ResetPassword";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"; // Ensure you're using this if working with routing
-import { AuthProvider } from '../AuthContext'; // Import the AuthProvider
-
-function Logout() {
-  localStorage.clear();
-  return <Navigate to="/login" />;
-}
-
-function RegisterAndLogout() {
-  localStorage.clear();
-  return <Register />;
-}
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from './AuthContext'; // Ensure this path is correct
 
 function App() {
+  console.log('App component is rendering'); // Log to indicate App is rendering
+
   return (
     <AuthProvider>
+      {console.log('AuthProvider is wrapping the component tree')} {/* Log inside AuthProvider */}
       <Router>
         <Layout>
           <Routes>
@@ -32,14 +25,13 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/search" element={<Search />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<RegisterAndLogout />} />
-            <Route path="/logout" element={<Logout />} />
+            <Route path="/register" element={<Register />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>
       </Router>
-    </AuthProvider>  
+    </AuthProvider>
   );
 }
 

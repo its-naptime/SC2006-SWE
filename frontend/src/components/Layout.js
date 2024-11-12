@@ -1,19 +1,21 @@
-// components/Layout.js
 import React, { useState, useContext } from 'react';
 import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import Form from '../components/Form'; // Import the Form component
-import { AuthContext, AuthProvider } from '../AuthContext'; // Import the AuthContext
-import 'bootstrap/dist/css/bootstrap.min.css';
+import Form from './Form';
+import { AuthContext } from '../AuthContext';
 
 const Layout = ({ children }) => {
-  const [showModal, setShowModal] = useState(false);
-  const [activeTab, setActiveTab] = useState('login'); // 'login' or 'register'
 
-  const { isAuthenticated } = useContext(AuthContext); // Access the authentication status
+  const context = useContext(AuthContext) || {};
+  const { isAuthenticated = false, logout = () => {} } = context;
+  console.log('AuthContext value in Layout (simplified):', isAuthenticated);
+  //const { isAuthenticated = false, logout = () => {} } = context;
+
+  const [showModal, setShowModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('login');
 
   const handleModalClose = () => setShowModal(false);
   const handleLoginShow = () => {
@@ -26,8 +28,8 @@ const Layout = ({ children }) => {
   };
 
   const handleLogout = () => {
-    logout(); // Call the logout method from AuthContext
-    setShowModal(false); // Close the modal after logout
+    logout();
+    setShowModal(false);
   };
 
   return (
@@ -51,8 +53,7 @@ const Layout = ({ children }) => {
                   <Nav.Link onClick={handleLogout}>Logout</Nav.Link>
                 </>
               )}
-              <Nav.Link href="/Favourites">Favourites</Nav.Link>
-            </Nav>            
+            </Nav>
           </Navbar.Collapse>
         </Container>
       </Navbar>
@@ -71,6 +72,8 @@ const Layout = ({ children }) => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {children}
     </>
   );
 };
