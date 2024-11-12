@@ -1,16 +1,19 @@
 // components/Layout.js
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Form from '../components/Form'; // Import the Form component
+import { AuthContext, AuthProvider } from '../AuthContext'; // Import the AuthContext
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Layout = ({ children }) => {
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState('login'); // 'login' or 'register'
+
+  const { isAuthenticated } = useContext(AuthContext); // Access the authentication status
 
   const handleModalClose = () => setShowModal(false);
   const handleLoginShow = () => {
@@ -20,6 +23,11 @@ const Layout = ({ children }) => {
   const handleRegisterShow = () => {
     setActiveTab('register');
     setShowModal(true);
+  };
+
+  const handleLogout = () => {
+    logout(); // Call the logout method from AuthContext
+    setShowModal(false); // Close the modal after logout
   };
 
   return (
@@ -32,10 +40,19 @@ const Layout = ({ children }) => {
             <Nav className="me-auto">
               <Nav.Link href="/">Home</Nav.Link>
               <Nav.Link href="/search">Search</Nav.Link>
-              <Nav.Link onClick={handleLoginShow}>Login</Nav.Link>
-              <Nav.Link onClick={handleRegisterShow}>Register</Nav.Link>
-             {/* <Nav.Link href="/Favourites">Favourites</Nav.Link>*/}
-            </Nav>
+              {!isAuthenticated ? (
+                <>
+                  <Nav.Link onClick={handleLoginShow}>Login</Nav.Link>
+                  <Nav.Link onClick={handleRegisterShow}>Register</Nav.Link>
+                </>
+              ) : (
+                <>
+                  <Nav.Link href="/Favourites">Favourites</Nav.Link>
+                  <Nav.Link onClick={handleLogout}>Logout</Nav.Link>
+                </>
+              )}
+              <Nav.Link href="/Favourites">Favourites</Nav.Link>
+            </Nav>            
           </Navbar.Collapse>
         </Container>
       </Navbar>
