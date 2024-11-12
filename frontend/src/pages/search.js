@@ -1,3 +1,4 @@
+// pages/search.js
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
@@ -18,13 +19,15 @@ import {
   PreschoolCard,
 } from "../components/SearchResults";
 import { DetailModal } from "../components/DetailModal";
+import { useAuth } from '../AuthContext';
+import api from '../Api';
 
 const ITEMS_PER_PAGE = 8;
 const NEARBY_RADIUS = 2; // in kilometers
-
 const Search = () => {
   const router = useRouter();
   const mapRef = useRef(null);
+  const { isAuthenticated } = useAuth();
 
   // Primary State Management
   const [searchType, setSearchType] = useState("hdb");
@@ -59,6 +62,13 @@ const Search = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentMapLocation, setCurrentMapLocation] = useState(null);
 
+  // Save State
+  const [savedItems, setSavedItems] = useState({
+    hdb: [],
+    schools: [],
+    preschools: []
+  });
+
   // Filter States
   const [filters, setFilters] = useState({
     // HDB filters
@@ -86,7 +96,6 @@ const Search = () => {
     sparkCertified: false,
     transportRequired: false,
   });
-
   // Initialize states from URL params
   useEffect(() => {
     if (router.isReady) {
@@ -98,6 +107,63 @@ const Search = () => {
     }
   }, [router.isReady]);
 
+  useEffect(() => {
+    if (isAuthenticated){
+      fetchSavedItems();
+    }
+  }, []);
+
+  // Fetch saved items when authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchSavedItems();
+    }
+  }, [isAuthenticated]);
+
+  // Primary results fetching
+  useEffect(() => {
+    const fetchResults = async () => {
+      if (!router.isReady) return;
+
+      try {
+        setLoading((prev) => ({ ...prev, primary: true }));
+        setError(null);
+
+        const searchParams = {
+          query_type: searchType,
+          page: currentPage,
+          page_size: ITEMS_PER_PAGE,
+          search: searchQuery,
+          ...getTypeSpecificParams(),
+        };
+
+        const response = await axios.post(
+          `http://localhost:8000/api/search/`,
+          searchParams
+        );
+
+        if (response.data.results) {
+          setPrimaryResults(response.data.results);
+          setTotalPages(Math.ceil(response.data.total / ITEMS_PER_PAGE));
+          setTotal(response.data.total);
+        }
+      } catch (err) {
+        console.error("Error fetching results:", err);
+        setError("Failed to fetch results. Please try again.");
+      } finally {
+        setLoading((prev) => ({ ...prev, primary: false }));
+      }
+    };
+
+    fetchResults();
+  }, [
+    router.query,
+    currentPage,
+    searchQuery,
+    filters,
+    searchType,
+    router.isReady,
+  ]);
   // Helper Functions
   const initializeFilters = (query) => {
     const newFilters = { ...filters };
@@ -119,6 +185,7 @@ const Search = () => {
         : [];
       newFilters.sortBy = query.sortBy || "price_desc";
     } else if (query.searchType === "school") {
+      // ... school filter initialization
       newFilters.zones = query.zones
         ? Array.isArray(query.zones)
           ? query.zones
@@ -135,6 +202,7 @@ const Search = () => {
       newFilters.gifted = query.gifted === "true";
       newFilters.ip = query.ip === "true";
     } else if (query.searchType === "preschool") {
+      // ... preschool filter initialization
       newFilters.postalCodes = query.postalCodes
         ? Array.isArray(query.postalCodes)
           ? query.postalCodes
@@ -187,214 +255,67 @@ const Search = () => {
     }
   };
 
-  // Map and Location Functions
-  const fetchNearbyItemsData = async (
-    latitude,
-    longitude,
-    primaryType,
-    primaryId
-  ) => {
-    const fetchForType = async (type) => {
-      try {
-        const response = await axios.post(
-          `http://localhost:8000/api/search/nearby/`,
-          {
-            latitude: parseFloat(latitude),
-            longitude: parseFloat(longitude),
-            radius: NEARBY_RADIUS,
-            exclude_id: primaryId,
-            type,
-          }
-        );
-        return response.data.results;
-      } catch (error) {
-        console.error(`Error fetching nearby ${type}:`, error);
-        return [];
-      }
-    };
-
-    if (primaryType === "hdb") {
-      const [schools, preschools] = await Promise.all([
-        fetchForType("school"),
-        fetchForType("preschool"),
-      ]);
-      return { schools, preschools, hdb: [] };
-    } else {
-      const hdb = await fetchForType("hdb");
-      return { schools: [], preschools: [], hdb };
-    }
-  };
-
-  const createMarkersFromData = (mainItem, nearbyData) => {
-    // Create main marker
-    const mainMarker = {
-      location: {
-        lat: parseFloat(mainItem.latitude),
-        lng: parseFloat(mainItem.longitude),
-      },
-      title:
-        mainItem.street_name || mainItem.school_name || mainItem.centre_name,
-      type: searchType,
-      isMain: true,
-    };
-
-    // Create nearby markers
-    let nearbyMarkers = [];
-
-    if (searchType === "hdb") {
-      nearbyMarkers = [
-        ...nearbyData.schools.map((school) => ({
-          location: {
-            lat: parseFloat(school.latitude),
-            lng: parseFloat(school.longitude),
-          },
-          title: school.school_name,
-          type: "school",
-          distance: school.distance,
-        })),
-        ...nearbyData.preschools.map((preschool) => ({
-          location: {
-            lat: parseFloat(preschool.latitude),
-            lng: parseFloat(preschool.longitude),
-          },
-          title: preschool.centre_name,
-          type: "preschool",
-          distance: preschool.distance,
-        })),
-      ];
-    } else {
-      nearbyMarkers = nearbyData.hdb.map((hdb) => ({
-        location: {
-          lat: parseFloat(hdb.latitude),
-          lng: parseFloat(hdb.longitude),
-        },
-        title: `${hdb.block} ${hdb.street_name}`,
-        type: "hdb",
-        distance: hdb.distance,
-      }));
+  // Save Functionality
+  const handleToggleSave = async (item) => {
+    if (!isAuthenticated) {
+      return;
     }
 
-    return [mainMarker, ...nearbyMarkers];
-  };
-
-  const handleViewMap = async (item) => {
     try {
-      // Set loading states
-      setIsMovingMap(true);
-      setIsLoadingMarkers(true);
-
-      // Clear all existing markers and nearby results
-      setCurrentViewMarkers([]);
-      setNearbyResults({
-        schools: [],
-        preschools: [],
-        hdb: [],
+      const typeMap = {
+        'hdb': 'hdbs',
+        'school': 'schools',
+        'preschool': 'preschools'
+      };
+      
+      const type = typeMap[searchType];
+      const idField = `${searchType}_id`;
+      
+      // Use the toggle_save endpoint
+      const response = await api.post(`/api/catalogue/saved-${type}/toggle_save/`, {
+        [idField]: item.id
       });
 
-      // If we're in a modal, close it
-      if (showModal) {
-        handleCloseModal();
+      if (response.data.status === 'removed') {
+        setSavedItems(prev => ({
+          ...prev,
+          [searchType]: prev[searchType].filter(id => id !== item.id)
+        }));
+      } else if (response.data.status === 'saved') {
+        setSavedItems(prev => ({
+          ...prev,
+          [searchType]: [...prev[searchType], item.id]
+        }));
       }
-
-      // Get the location
-      const location = {
-        lat: parseFloat(item.latitude),
-        lng: parseFloat(item.longitude),
-      };
-
-      // Move map first
-      if (mapRef.current) {
-        mapRef.current.panTo(location);
-        mapRef.current.setZoom(15);
-      }
-
-      // Fetch nearby items
-      const nearbyData = await fetchNearbyItemsData(
-        location.lat,
-        location.lng,
-        searchType,
-        item.id
-      );
-
-      // Update nearby results state
-      setNearbyResults(nearbyData);
-
-      // Create and set all markers
-      const markers = createMarkersFromData(item, nearbyData);
-      setCurrentViewMarkers(markers);
-
-      // Fit bounds if there are multiple markers
-      if (mapRef.current && markers.length > 1) {
-        const bounds = new google.maps.LatLngBounds();
-        markers.forEach((marker) => bounds.extend(marker.location));
-        mapRef.current.fitBounds(bounds);
-
-        google.maps.event.addListenerOnce(
-          mapRef.current,
-          "bounds_changed",
-          () => {
-            if (mapRef.current.getZoom() > 16) {
-              mapRef.current.setZoom(16);
-            }
-          }
-        );
-      }
-
-      setCurrentMapLocation(location);
     } catch (error) {
-      console.error("Error in handleViewMap:", error);
-      setError("Failed to update map view");
-    } finally {
-      setIsMovingMap(false);
-      setIsLoadingMarkers(false);
+      console.error('Error toggling save:', error);
     }
   };
 
-  // Primary results fetching
-  useEffect(() => {
-    const fetchResults = async () => {
-      if (!router.isReady) return;
+  // Update the fetchSavedItems function as well
+  const fetchSavedItems = async () => {
+    if (!isAuthenticated) return;
 
-      try {
-        setLoading((prev) => ({ ...prev, primary: true }));
-        setError(null);
+    try {
+      const [hdbResponse, schoolsResponse, preschoolsResponse] = await Promise.all([
+        api.get('/api/catalogue/saved-hdbs/'),
+        api.get('/api/catalogue/saved-schools/'),
+        api.get('/api/catalogue/saved-preschools/')
+      ]);
 
-        const searchParams = {
-          query_type: searchType,
-          page: currentPage,
-          page_size: ITEMS_PER_PAGE,
-          search: searchQuery,
-          ...getTypeSpecificParams(),
-        };
+      setSavedItems({
+        hdb: hdbResponse.data.map(item => item.hdb.id),
+        schools: schoolsResponse.data.map(item => item.school.id),
+        preschools: preschoolsResponse.data.map(item => item.preschool.id)
+      });
+    } catch (error) {
+      console.error('Error fetching saved items:', error);
+    }
+  };
 
-        const response = await axios.post(
-          `http://localhost:8000/api/search/`,
-          searchParams
-        );
-
-        if (response.data.results) {
-          setPrimaryResults(response.data.results);
-          setTotalPages(Math.ceil(response.data.total / ITEMS_PER_PAGE));
-          setTotal(response.data.total);
-          // Don't clear markers here - let handleViewMap handle that
-        }
-      } catch (err) {
-        console.error("Error fetching results:", err);
-        setError("Failed to fetch results. Please try again.");
-      } finally {
-        setLoading((prev) => ({ ...prev, primary: false }));
-      }
-    };
-
-    fetchResults();
-  }, [
-    router.query,
-    currentPage,
-    searchQuery,
-    filters,
-    searchType,
-    router.isReady,
-  ]);
+  const isItemSaved = (itemId) => {
+    return savedItems[searchType]?.includes(itemId) || false;
+  };
 
   // Event Handlers
   const handleSearch = (e) => {
@@ -432,10 +353,10 @@ const Search = () => {
   const handleSearchTypeChange = (type) => {
     setSearchType(type);
     setCurrentPage(1);
-    setCurrentViewMarkers([]); // Clear markers when changing search type
+    setCurrentViewMarkers([]);
     setNearbyResults({ schools: [], preschools: [], hdb: [] });
-
-    // Reset filters when changing search type
+    
+    // Reset filters
     setFilters({
       ...filters,
       ...(type === "hdb"
@@ -467,7 +388,6 @@ const Search = () => {
           }),
     });
 
-    // Reset URL parameters
     const baseParams = {
       searchType: type,
       page: 1,
@@ -484,13 +404,92 @@ const Search = () => {
     );
   };
 
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    updateSearchParams({ page });
+    window.scrollTo(0, 0);
+  };
+
+  const handleShowModal = async (item) => {
+    setSelectedItem(item);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedItem(null);
+  };
+
+  const handleViewMap = async (item) => {
+    try {
+      setIsMovingMap(true);
+      setIsLoadingMarkers(true);
+
+      setCurrentViewMarkers([]);
+      setNearbyResults({
+        schools: [],
+        preschools: [],
+        hdb: [],
+      });
+
+      if (showModal) {
+        handleCloseModal();
+      }
+
+      const location = {
+        lat: parseFloat(item.latitude),
+        lng: parseFloat(item.longitude),
+      };
+
+      if (mapRef.current) {
+        mapRef.current.panTo(location);
+        mapRef.current.setZoom(15);
+      }
+
+      const nearbyData = await fetchNearbyItemsData(
+        location.lat,
+        location.lng,
+        searchType,
+        item.id
+      );
+
+      setNearbyResults(nearbyData);
+
+      const markers = createMarkersFromData(item, nearbyData);
+      setCurrentViewMarkers(markers);
+
+      if (mapRef.current && markers.length > 1) {
+        const bounds = new google.maps.LatLngBounds();
+        markers.forEach((marker) => bounds.extend(marker.location));
+        mapRef.current.fitBounds(bounds);
+
+        google.maps.event.addListenerOnce(
+          mapRef.current,
+          "bounds_changed",
+          () => {
+            if (mapRef.current.getZoom() > 16) {
+              mapRef.current.setZoom(16);
+            }
+          }
+        );
+      }
+
+      setCurrentMapLocation(location);
+    } catch (error) {
+      console.error("Error in handleViewMap:", error);
+      setError("Failed to update map view");
+    } finally {
+      setIsMovingMap(false);
+      setIsLoadingMarkers(false);
+    }
+  };
+
   const updateSearchParams = (newParams) => {
     const updatedQuery = {
       ...router.query,
       ...newParams,
     };
 
-    // Remove empty params
     Object.keys(updatedQuery).forEach((key) => {
       if (
         !updatedQuery[key] ||
@@ -508,23 +507,6 @@ const Search = () => {
       undefined,
       { shallow: true }
     );
-  };
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    updateSearchParams({ page });
-    window.scrollTo(0, 0);
-  };
-
-  const handleShowModal = async (item) => {
-    setSelectedItem(item);
-    setShowModal(true);
-    await handleViewMap(item);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setSelectedItem(null);
   };
 
   const renderActiveFilters = () => {
@@ -626,7 +608,6 @@ const Search = () => {
 
     return activeFilters;
   };
-
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -680,7 +661,7 @@ const Search = () => {
 
         <div className="d-flex justify-content-evenly w-25">
           <div>
-          <p className="px-2">Sort:</p>
+            <p className="px-2">Sort:</p>
           </div>
           <div className="mx-2">
             <Button className="px-4"
@@ -700,9 +681,7 @@ const Search = () => {
           </div>
           <div className="mx-2">
             <Button
-              variant={
-                searchType === "preschool" ? "primary" : "outline-primary"
-              }
+              variant={searchType === "preschool" ? "primary" : "outline-primary"}
               onClick={() => handleSearchTypeChange("preschool")}
             >
               Preschools
@@ -779,6 +758,8 @@ const Search = () => {
                           onViewMap={handleViewMap}
                           onViewDetails={handleShowModal}
                           isMovingMap={isMovingMap}
+                          isSaved={isItemSaved(item.id)}
+                          onToggleSave={handleToggleSave}
                         />
                       );
                     case "school":
@@ -789,6 +770,8 @@ const Search = () => {
                           onViewMap={handleViewMap}
                           onViewDetails={handleShowModal}
                           isMovingMap={isMovingMap}
+                          isSaved={isItemSaved(item.id)}
+                          onToggleSave={handleToggleSave}
                         />
                       );
                     case "preschool":
@@ -799,6 +782,8 @@ const Search = () => {
                           onViewMap={handleViewMap}
                           onViewDetails={handleShowModal}
                           isMovingMap={isMovingMap}
+                          isSaved={isItemSaved(item.id)}
+                          onToggleSave={handleToggleSave}
                         />
                       );
                   }
@@ -879,6 +864,8 @@ const Search = () => {
         item={selectedItem}
         type={searchType}
         onViewMap={handleViewMap}
+        isSaved={selectedItem ? isItemSaved(selectedItem.id) : false}
+        onToggleSave={handleToggleSave}
       />
     </div>
   );

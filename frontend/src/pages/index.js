@@ -27,43 +27,6 @@ const Index = () => {
 
   return (
     <div className={styles.pageContainer}>
-      {/* Remove the Layout component from here */}
-      
-      {/* Connection status indicator */}
-      {connectionStatus && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: 20,
-            right: 20,
-            padding: "8px 12px",
-            borderRadius: "4px",
-            fontSize: "14px",
-            backgroundColor:
-              connectionStatus === "success" ? "#4CAF50" : "#f44336",
-            color: "white",
-            opacity: 0.9,
-            zIndex: 1000,
-            transition: "opacity 0.3s",
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-          }}
-        >
-          <div
-            style={{
-              width: "8px",
-              height: "8px",
-              borderRadius: "50%",
-              backgroundColor: "white",
-            }}
-          />
-          {connectionStatus === "success"
-            ? "Connected to backend"
-            : "Backend connection failed"}
-        </div>
-      )}
-
       <img
         src="/images/home.jpg"
         alt="Example Image"

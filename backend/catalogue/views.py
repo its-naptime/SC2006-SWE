@@ -1,139 +1,85 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.models import User
-from database.models import UserSchoolSearch, UserPreschoolSearch, UserHDBSearch
-from .forms import UserSchoolSearchForm, UserPreschoolSearchForm, UserHDBSearchForm
-from django.contrib.auth.decorators import login_required
-from .serializers import UserSchoolSearchSerializer, UserPreschoolSearchSerializer, UserHDBSearchSerializer
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions, status
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from django.shortcuts import get_object_or_404
+from .models import SavedHDB, SavedSchool, SavedPreschool
+from .serializers import SavedHDBSerializer, SavedSchoolSerializer, SavedPreschoolSerializer
+from database.models import HDB_data, school_info, preschool_centre
 
-class UserSchoolSearchView(viewsets.ModelViewSet):
-    queryset = UserSchoolSearch.objects.all()
-    serializer_class = UserSchoolSearchSerializer
+class SavedHDBViewSet(viewsets.ModelViewSet):
+    serializer_class = SavedHDBSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return SavedHDB.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    @action(detail=False, methods=['post'])
+    def toggle_save(self, request):
+        hdb_id = request.data.get('hdb_id')
+        if not hdb_id:
+            return Response({'error': 'hdb_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        hdb = get_object_or_404(HDB_data, id=hdb_id)
+        saved_hdb = SavedHDB.objects.filter(user=request.user, hdb=hdb).first()
+
+        if saved_hdb:
+            saved_hdb.delete()
+            return Response({'status': 'removed'}, status=status.HTTP_200_OK)
+        else:
+            SavedHDB.objects.create(user=request.user, hdb=hdb)
+            return Response({'status': 'saved'}, status=status.HTTP_201_CREATED)
+
+class SavedSchoolViewSet(viewsets.ModelViewSet):
+    serializer_class = SavedSchoolSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
     def get_queryset(self):
-        return UserSchoolSearch.objects.filter(user=self.request.user)
-
-
-class UserPreschoolSearchView(viewsets.ModelViewSet):
-    queryset = UserPreschoolSearch.objects.all()
-    serializer_class = UserPreschoolSearchSerializer
+        return SavedSchool.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-    def get_queryset(self):
-        return UserPreschoolSearch.objects.filter(user=self.request.user)
 
-class UserHDBSearchView(viewsets.ModelViewSet):
-    queryset = UserHDBSearch.objects.all()
-    serializer_class = UserHDBSearchSerializer
+    @action(detail=False, methods=['post'])
+    def toggle_save(self, request):
+        school_id = request.data.get('school_id')
+        if not school_id:
+            return Response({'error': 'school_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        school = get_object_or_404(school_info, id=school_id)
+        saved_school = SavedSchool.objects.filter(user=request.user, school=school).first()
+
+        if saved_school:
+            saved_school.delete()
+            return Response({'status': 'removed'}, status=status.HTTP_200_OK)
+        else:
+            SavedSchool.objects.create(user=request.user, school=school)
+            return Response({'status': 'saved'}, status=status.HTTP_201_CREATED)
+
+class SavedPreschoolViewSet(viewsets.ModelViewSet):
+    serializer_class = SavedPreschoolSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return SavedPreschool.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-    def get_queryset(self):
-        return UserHDBSearch.objects.filter(user=self.request.user)
-    
-# List View
 
-@login_required
-def user_school_search_list(request):
-    searches = UserSchoolSearch.objects.filter(user=request.user)
-    return render(request, 'catalogue/templates/user_school_search_list.html', {'searches': searches})
+    @action(detail=False, methods=['post'])
+    def toggle_save(self, request):
+        preschool_id = request.data.get('preschool_id')
+        if not preschool_id:
+            return Response({'error': 'preschool_id is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-# Create View
-@login_required
-def user_school_search_create(request):
-    if request.method == 'POST':
-        form = UserSchoolSearchForm(request.POST)
-        if form.is_valid():
-            search = form.save(commit=False)
-            search.user = request.user
-            search.save()
-            return redirect('user_school_search_list')
-    else:
-        form = UserSchoolSearchForm()
-    return render(request, 'catalogue/templates/user_school_search_form.html', {'form': form})
+        preschool = get_object_or_404(preschool_centre, id=preschool_id)
+        saved_preschool = SavedPreschool.objects.filter(user=request.user, preschool=preschool).first()
 
-# Delete View
-@login_required
-def user_school_search_delete(request, pk):
-    search = get_object_or_404(UserSchoolSearch, pk=pk, user=request.user)
-    if request.method == 'POST':
-        search.delete()
-        return redirect('user_school_search_list')
-    return render(request, 'catalogue/templates/user_school_search_confirm_delete.html', {'search': search})
-
-# Detail View
-@login_required
-def user_school_search_detail(request, pk):
-    search = get_object_or_404(UserSchoolSearch, pk=pk, user=request.user)
-    return render(request, 'catalogue/templates/user_school_search_detail.html', {'search': search})
-
-@login_required
-def user_preschool_search_list(request):
-    searches = UserPreschoolSearch.objects.filter(user=request.user)
-    return render(request, 'catalogue/templates/user_preschool_search_list.html', {'searches': searches})
-
-# Create View
-@login_required
-def user_preschool_search_create(request):
-    if request.method == 'POST':
-        form = UserPreschoolSearchForm(request.POST)
-        if form.is_valid():
-            search = form.save(commit=False)
-            search.user = request.user
-            search.save()
-            return redirect('user_preschool_search_list')
-    else:
-        form = UserPreschoolSearchForm()
-    return render(request, 'catalogue/templates/user_preschool_search_form.html', {'form': form})
-
-# Detail View
-@login_required
-def user_preschool_search_detail(request, pk):
-    search = get_object_or_404(UserPreschoolSearch, pk=pk, user=request.user)
-    return render(request, 'catalogue/templates/user_preschool_search_detail.html', {'search': search})
-
-# Delete View
-@login_required
-def user_preschool_search_delete(request, pk):
-    search = get_object_or_404(UserPreschoolSearch, pk=pk, user=request.user)
-    if request.method == 'POST':
-        search.delete()
-        return redirect('user_preschool_search_list')
-    return render(request, 'catalogue/templates/user_preschool_search_confirm_delete.html', {'search': search})
-
-@login_required
-def user_hdb_search_list(request):
-    searches = UserHDBSearch.objects.filter(user=request.user)
-    return render(request, 'catalogue/templates/user_hdb_search_list.html', {'searches': searches})
-
-# Create View
-@login_required
-def user_hdb_search_create(request):
-    if request.method == 'POST':
-        form = UserHDBSearchForm(request.POST)
-        if form.is_valid():
-            search = form.save(commit=False)
-            search.user = request.user
-            search.save()
-            return redirect('user_hdb_search_list')
-    else:
-        form = UserHDBSearchForm()
-    return render(request, 'catalogue/templates/user_hdb_search_form.html', {'form': form})
-
-# Detail View
-@login_required
-def user_hdb_search_detail(request, pk):
-    search = get_object_or_404(UserHDBSearch, pk=pk, user=request.user)
-    return render(request, 'catalogue/templates/user_hdb_search_detail.html', {'search': search})
-
-# Delete View
-@login_required
-def user_hdb_search_delete(request, pk):
-    search = get_object_or_404(UserHDBSearch, pk=pk, user=request.user)
-    if request.method == 'POST':
-        search.delete()
-        return redirect('user_hdb_search_list')
-    return render(request, 'catalogue/templates/user_hdb_search_confirm_delete.html', {'search': search})
+        if saved_preschool:
+            saved_preschool.delete()
+            return Response({'status': 'removed'}, status=status.HTTP_200_OK)
+        else:
+            SavedPreschool.objects.create(user=request.user, preschool=preschool)
+            return Response({'status': 'saved'}, status=status.HTTP_201_CREATED)
