@@ -491,6 +491,7 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
                     View Location on Map
                   </Button>
                 </div>
+                {type === "hdb" && (
                 <div className="">
                   <a
                     href={`https://www.propertyguru.com.sg/property-for-sale?market=residential&freetext=${encodeURIComponent(
@@ -503,6 +504,7 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
                     Search Property on PropertyGuru
                   </a>
                 </div>
+                )}
               </div>
             </div>
           </Tab>
