@@ -1,61 +1,53 @@
 from rest_framework import serializers
 from .models import SavedHDB, SavedSchool, SavedPreschool
-from database.models import HDB_data, school_info, preschool_centre
+from database.models import HDB_data, school_info, preschool_centre, school_cca
+
+class HDBSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HDB_data
+        fields = '__all__'
+
+class SchoolCCASerializer(serializers.ModelSerializer):
+    class Meta:
+        model = school_cca
+        fields = '__all__'
+
+class SchoolInfoSerializer(serializers.ModelSerializer):
+    ccas = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = school_info
+        fields = '__all__'
+        
+    def get_ccas(self, obj):
+        ccas = school_cca.objects.filter(school_name=obj.school_name)
+        return SchoolCCASerializer(ccas, many=True).data
+
+class PreschoolSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = preschool_centre
+        fields = '__all__'
 
 class SavedHDBSerializer(serializers.ModelSerializer):
+    hdb_details = HDBSerializer(source='hdb', read_only=True)
+    
     class Meta:
         model = SavedHDB
-        fields = ['id', 'hdb', 'saved_at', 'notes']
+        fields = ['id', 'hdb', 'hdb_details', 'saved_at', 'notes']
         read_only_fields = ['saved_at']
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['hdb_details'] = {
-            'block': instance.hdb.block,
-            'street_name': instance.hdb.street_name,
-            'town': instance.hdb.town,
-            'flat_type': instance.hdb.flat_type,
-            'resale_price': str(instance.hdb.resale_price),
-            'floor_area_sqm': str(instance.hdb.floor_area_sqm),
-            'latitude': instance.hdb.latitude,
-            'longitude': instance.hdb.longitude,
-        }
-        return representation
 
 class SavedSchoolSerializer(serializers.ModelSerializer):
+    school_details = SchoolInfoSerializer(source='school', read_only=True)
+    
     class Meta:
         model = SavedSchool
-        fields = ['id', 'school', 'saved_at', 'notes']
+        fields = ['id', 'school', 'school_details', 'saved_at', 'notes']
         read_only_fields = ['saved_at']
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['school_details'] = {
-            'school_name': instance.school.school_name,
-            'address': instance.school.address,
-            'postal_code': instance.school.postal_code,
-            'telephone_no': instance.school.telephone_no,
-            'email_address': instance.school.email_address,
-            'latitude': instance.school.latitude,
-            'longitude': instance.school.longitude,
-        }
-        return representation
 
 class SavedPreschoolSerializer(serializers.ModelSerializer):
+    preschool_details = PreschoolSerializer(source='preschool', read_only=True)
+    
     class Meta:
         model = SavedPreschool
-        fields = ['id', 'preschool', 'saved_at', 'notes']
+        fields = ['id', 'preschool', 'preschool_details', 'saved_at', 'notes']
         read_only_fields = ['saved_at']
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['preschool_details'] = {
-            'centre_name': instance.preschool.centre_name,
-            'centre_address': instance.preschool.centre_address,
-            'postal_code': instance.preschool.postal_code,
-            'centre_contact_no': instance.preschool.centre_contact_no,
-            'centre_email_address': instance.preschool.centre_email_address,
-            'latitude': instance.preschool.latitude,
-            'longitude': instance.preschool.longitude,
-        }
-        return representation
