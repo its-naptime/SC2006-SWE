@@ -38,7 +38,7 @@ const Layout = ({ children }) => {
 
   return (
     <div className="min-h-screen d-flex flex-column">
-      <Navbar bg="dark" variant="dark" expand="lg" className="mb-3">
+      <Navbar bg="dark" variant="dark" expand="lg" className="">
         <Container>
           <Link href="/" passHref legacyBehavior>
             <Navbar.Brand className='px-4'>Kickstart</Navbar.Brand>
@@ -110,7 +110,7 @@ const Layout = ({ children }) => {
         </Modal.Body>
       </Modal>
 
-      <main className="container flex-grow-1 mt-4">
+      <main className="flex-grow-1">
         {children}
       </main>
 
