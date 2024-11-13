@@ -61,7 +61,7 @@ const Layout = ({ children }) => {
                 <>
                   <Link href="/profile" passHref legacyBehavior>
                     <Nav.Link active={router.pathname === "/profile"}>
-                      Catalogue
+                      Favourites
                     </Nav.Link>
                   </Link>
                   <NavDropdown title={user?.username || 'Account'} id="basic-nav-dropdown">
