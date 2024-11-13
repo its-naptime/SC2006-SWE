@@ -78,7 +78,7 @@ const Search = () => {
     maxArea: "",
     flatTypes: [],
     towns: [],
-    sortBy: "price_desc",
+    sortBy: "-resale_price",
 
     // School filters
     zones: [],
@@ -222,7 +222,7 @@ const Search = () => {
           ? query.towns
           : [query.towns]
         : [];
-      newFilters.sortBy = query.sortBy || "price_desc";
+      newFilters.sortBy = query.sortBy || "-resale_price";
     } else if (query.searchType === "school") {
       // ... school filter initialization
       newFilters.zones = query.zones
@@ -406,7 +406,7 @@ const Search = () => {
             maxArea: "",
             flatTypes: [],
             towns: [],
-            sortBy: "price_desc",
+            sortBy: "-resale_price",
           }
         : type === "school"
         ? {

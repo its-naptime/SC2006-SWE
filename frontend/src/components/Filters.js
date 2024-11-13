@@ -101,10 +101,10 @@ export const HDBFilters = ({ filters, onFilterChange }) => (
         value={filters.sortBy}
         onChange={(e) => onFilterChange('sortBy', e.target.value)}
       >
-        <option value="price_desc">Price (High to Low)</option>
-        <option value="price_asc">Price (Low to High)</option>
-        <option value="area_desc">Area (Large to Small)</option>
-        <option value="area_asc">Area (Small to Large)</option>
+        <option value="-resale_price">Price (High to Low)</option>
+        <option value="resale_price">Price (Low to High)</option>
+        <option value="-floor_area_sqm">Area (Large to Small)</option>
+        <option value="floor_area_sqm">Area (Small to Large)</option>
       </Form.Select>
     </Form.Group>
   </Form>
@@ -122,22 +122,6 @@ export const SchoolFilters = ({ filters, onFilterChange }) => (
         <option value="PRIMARY">Primary</option>
         <option value="SECONDARY">Secondary</option>
         <option value="MIXED LEVEL">Mixed Levels</option>
-      </Form.Select>
-    </Form.Group>
-
-    <Form.Group className="col-md-6">
-      <Form.Label>School Type</Form.Label>
-      <Form.Select
-        multiple
-        value={filters.schoolTypes}
-        onChange={(e) => onFilterChange('schoolTypes', 
-          Array.from(e.target.selectedOptions, option => option.value)
-        )}
-      >
-        <option value="GOVT">Government</option>
-        <option value="GOVT-AIDED">Government-Aided</option>
-        <option value="INDEPENDENT">Independent</option>
-        <option value="SPECIALISED">Specialised</option>
       </Form.Select>
     </Form.Group>
 
@@ -224,9 +208,8 @@ export const PreschoolFilters = ({ filters, onFilterChange }) => (
           Array.from(e.target.selectedOptions, option => option.value)
         )}
       >
-        <option value="Full Day">Full Day</option>
-        <option value="Half Day">Half Day</option>
-        <option value="Flexi Care">Flexi Care</option>
+        <option value="CC">Child Care</option>
+        <option value="KN">Kindergarten</option>
       </Form.Select>
     </Form.Group>
 

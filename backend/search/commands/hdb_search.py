@@ -49,7 +49,7 @@ class HDBSearchCommand(SearchCommand):
             queryset = queryset.filter(floor_area_sqm__lte=self.params["maxArea"])
 
         # Sorting
-        sort_by = self.params.get("sort", "-resale_price")
+        sort_by = self.params.get("sortBy", "-resale_price")
         queryset = queryset.order_by(sort_by)
 
         # Get paginated data

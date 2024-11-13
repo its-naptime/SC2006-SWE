@@ -35,7 +35,8 @@ class PreschoolSearchCommand(SearchCommand):
             if level:
                 print("Applying vacancy filter for level:", level)
                 vacancy_field = f"{level}_vacancy_current_month"
-                queryset = queryset.exclude(**{vacancy_field: "0"})
+                queryset = queryset.exclude(**{vacancy_field: "Full"})
+                queryset = queryset.exclude(**{vacancy_field: "Not Applicable"})
 
             # Service model filter
             if self.params.get("service_models"):
