@@ -164,6 +164,97 @@ const Search = () => {
     searchType,
     router.isReady,
   ]);
+
+    // Map and Location Functions
+    const fetchNearbyItemsData = async (
+      latitude,
+      longitude,
+      primaryType,
+      primaryId
+    ) => {
+      const fetchForType = async (type) => {
+        try {
+          const response = await axios.post(
+            `http://localhost:8000/api/search/nearby/`,
+            {
+              latitude: parseFloat(latitude),
+              longitude: parseFloat(longitude),
+              radius: NEARBY_RADIUS,
+              exclude_id: primaryId,
+              type,
+            }
+          );
+          return response.data.results;
+        } catch (error) {
+          console.error(`Error fetching nearby ${type}:`, error);
+          return [];
+        }
+      };
+  
+      if (primaryType === "hdb") {
+        const [schools, preschools] = await Promise.all([
+          fetchForType("school"),
+          fetchForType("preschool"),
+        ]);
+        return { schools, preschools, hdb: [] };
+      } else {
+        const hdb = await fetchForType("hdb");
+        return { schools: [], preschools: [], hdb };
+      }
+    };
+  
+    const createMarkersFromData = (mainItem, nearbyData) => {
+      // Create main marker
+      const mainMarker = {
+        location: {
+          lat: parseFloat(mainItem.latitude),
+          lng: parseFloat(mainItem.longitude),
+        },
+        title:
+          mainItem.street_name || mainItem.school_name || mainItem.centre_name,
+        type: searchType,
+        isMain: true,
+      };
+  
+      // Create nearby markers
+      let nearbyMarkers = [];
+  
+      if (searchType === "hdb") {
+        nearbyMarkers = [
+          ...nearbyData.schools.map((school) => ({
+            location: {
+              lat: parseFloat(school.latitude),
+              lng: parseFloat(school.longitude),
+            },
+            title: school.school_name,
+            type: "school",
+            distance: school.distance,
+          })),
+          ...nearbyData.preschools.map((preschool) => ({
+            location: {
+              lat: parseFloat(preschool.latitude),
+              lng: parseFloat(preschool.longitude),
+            },
+            title: preschool.centre_name,
+            type: "preschool",
+            distance: preschool.distance,
+          })),
+        ];
+      } else {
+        nearbyMarkers = nearbyData.hdb.map((hdb) => ({
+          location: {
+            lat: parseFloat(hdb.latitude),
+            lng: parseFloat(hdb.longitude),
+          },
+          title: `${hdb.block} ${hdb.street_name}`,
+          type: "hdb",
+          distance: hdb.distance,
+        }));
+      }
+  
+      return [mainMarker, ...nearbyMarkers];
+    };
+  
   // Helper Functions
   const initializeFilters = (query) => {
     const newFilters = { ...filters };
