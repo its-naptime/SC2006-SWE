@@ -1,11 +1,9 @@
-// src/components/Layout.js
+// components/Layout.js
 import React, { useState } from 'react';
-import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import Modal from 'react-bootstrap/Modal';
-import Button from 'react-bootstrap/Button';
 import Form from './Form';
 import { useAuth } from '../AuthContext';
 import { useRouter } from 'next/router';
@@ -38,10 +36,10 @@ const Layout = ({ children }) => {
 
   return (
     <div className="min-h-screen d-flex flex-column">
-      <Navbar bg="dark" variant="dark" expand="lg" className="">
-        <Container>
+      <Navbar bg="dark" variant="dark" expand="lg">
+        <div className="container-fluid px-4">
           <Link href="/" passHref legacyBehavior>
-            <Navbar.Brand className='px-4'>Kickstart</Navbar.Brand>
+            <Navbar.Brand>Kickstart</Navbar.Brand>
           </Link>
           
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
@@ -56,34 +54,17 @@ const Layout = ({ children }) => {
 
               {!isAuthenticated ? (
                 <>
-                  <Nav.Link 
-                    onClick={handleLoginShow} 
-                    style={{ cursor: 'pointer' }}
-                  >
-                    Login
-                  </Nav.Link>
-                  <Nav.Link 
-                    onClick={handleRegisterShow} 
-                    style={{ cursor: 'pointer' }}
-                  >
-                    Register
-                  </Nav.Link>
+                  <Nav.Link onClick={handleLoginShow}>Login</Nav.Link>
+                  <Nav.Link onClick={handleRegisterShow}>Register</Nav.Link>
                 </>
               ) : (
                 <>
-                  <Link href="/favourites" passHref legacyBehavior>
-                    <Nav.Link active={router.pathname === "/favourites"}>
-                      Favourites
+                  <Link href="/profile" passHref legacyBehavior>
+                    <Nav.Link active={router.pathname === "/profile"}>
+                      Catalogue
                     </Nav.Link>
                   </Link>
-                  <NavDropdown 
-                    title={user?.username || 'Account'} 
-                    id="basic-nav-dropdown"
-                  >
-                    <Link href="/profile" passHref legacyBehavior>
-                      <NavDropdown.Item>Profile</NavDropdown.Item>
-                    </Link>
-                    <NavDropdown.Divider />
+                  <NavDropdown title={user?.username || 'Account'} id="basic-nav-dropdown">
                     <NavDropdown.Item onClick={handleLogout}>
                       Logout
                     </NavDropdown.Item>
@@ -92,8 +73,13 @@ const Layout = ({ children }) => {
               )}
             </Nav>
           </Navbar.Collapse>
-        </Container>
+        </div>
       </Navbar>
+
+      {/* Content area - no wrapping */}
+      <div className="flex-grow-1">
+        {children}
+      </div>
 
       <Modal show={showModal} onHide={handleModalClose} centered>
         <Modal.Header closeButton>
@@ -110,14 +96,10 @@ const Layout = ({ children }) => {
         </Modal.Body>
       </Modal>
 
-      <main className="flex-grow-1">
-        {children}
-      </main>
-
       <footer className="mt-auto py-3 bg-dark text-light">
-        <Container className="text-center">
+        <div className="container-fluid text-center">
           <p className="mb-0">© 2024 Kickstart. All rights reserved.</p>
-        </Container>
+        </div>
       </footer>
     </div>
   );

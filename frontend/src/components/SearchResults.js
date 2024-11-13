@@ -1,9 +1,11 @@
+// components/SearchResults.js
 import React from 'react';
 import Image from 'next/image';
-import { Button, Modal } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
+import { BookmarkPlus, BookmarkCheck } from 'lucide-react'; // Add this import
 import styles from "../styles/Search.module.css";
 
-export const HDBCard = ({ property, onViewMap, onViewDetails, isMovingMap }) => (
+export const HDBCard = ({ property, onViewMap, onViewDetails, isMovingMap, isSaved, onToggleSave }) => (
   <div className={styles.propertyCard}>
     <Image
       src={property.image || "/images/property.jpg"}
@@ -33,19 +35,28 @@ export const HDBCard = ({ property, onViewMap, onViewDetails, isMovingMap }) => 
             'View on Map'
           )}
         </Button>
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => onViewDetails(property)}
-        >
-          View Details
-        </Button>
+        <div className="d-flex gap-2">
+          <Button
+            variant="outline-secondary"
+            size="sm"
+            onClick={() => onToggleSave(property)}
+          >
+            {isSaved ? <BookmarkCheck size={18} /> : <BookmarkPlus size={18} />}
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => onViewDetails(property)}
+          >
+            View Details
+          </Button>
+        </div>
       </div>
     </div>
   </div>
 );
 
-export const SchoolCard = ({ school, onViewMap, onViewDetails, isMovingMap }) => (
+export const SchoolCard = ({ school, onViewMap, onViewDetails, isMovingMap, isSaved, onToggleSave }) => (
   <div className={styles.propertyCard}>
     <Image
       src={school.image || "/images/school.jpg"}
@@ -78,19 +89,28 @@ export const SchoolCard = ({ school, onViewMap, onViewDetails, isMovingMap }) =>
             'View on Map'
           )}
         </Button>
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => onViewDetails(school)}
-        >
-          View Details
-        </Button>
+        <div className="d-flex gap-2">
+          <Button
+            variant="outline-secondary"
+            size="sm"
+            onClick={() => onToggleSave(school)}
+          >
+            {isSaved ? <BookmarkCheck size={18} /> : <BookmarkPlus size={18} />}
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => onViewDetails(school)}
+          >
+            View Details
+          </Button>
+        </div>
       </div>
     </div>
   </div>
 );
 
-export const PreschoolCard = ({ preschool, onViewMap, onViewDetails, isMovingMap }) => (
+export const PreschoolCard = ({ preschool, onViewMap, onViewDetails, isMovingMap, isSaved, onToggleSave }) => (
   <div className={styles.propertyCard}>
     <Image
       src={preschool.image || "/images/preschool.jpg"}
@@ -125,13 +145,22 @@ export const PreschoolCard = ({ preschool, onViewMap, onViewDetails, isMovingMap
             'View on Map'
           )}
         </Button>
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => onViewDetails(preschool)}
-        >
-          View Details
-        </Button>
+        <div className="d-flex gap-2">
+          <Button
+            variant="outline-secondary"
+            size="sm"
+            onClick={() => onToggleSave(preschool)}
+          >
+            {isSaved ? <BookmarkCheck size={18} /> : <BookmarkPlus size={18} />}
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => onViewDetails(preschool)}
+          >
+            View Details
+          </Button>
+        </div>
       </div>
     </div>
   </div>

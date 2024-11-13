@@ -1,11 +1,21 @@
+// components/DetailModal.js
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Tabs, Tab } from "react-bootstrap";
 import Image from "next/image";
 import axios from "axios";
+import { BookmarkPlus, BookmarkCheck } from 'lucide-react';
 import { DetailContent } from "./DetailContent";
 import styles from "../styles/Search.module.css";
 
-export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
+export const DetailModal = ({ 
+  show, 
+  onHide, 
+  item, 
+  type, 
+  onViewMap, 
+  isSaved,
+  onToggleSave 
+}) => {
   const [activeTab, setActiveTab] = useState("details");
   const [nearbyItems, setNearbyItems] = useState({
     schools: [],
@@ -37,7 +47,6 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
 
     try {
       if (type === "hdb") {
-        // If viewing HDB, fetch both schools and preschools
         const [schoolsResponse, preschoolsResponse] = await Promise.all([
           axios.post("http://localhost:8000/api/search/nearby/", {
             latitude: parseFloat(item.latitude),
@@ -60,7 +69,6 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
           preschools: preschoolsResponse.data.results || [],
         });
       } else {
-        // If viewing school or preschool, fetch HDB
         const response = await axios.post(
           "http://localhost:8000/api/search/nearby/",
           {
@@ -84,56 +92,19 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
       setIsLoadingNearby(false);
     }
   };
-  {
-    /*
-  // Fetch place details and reviews
-  const fetchPlaceAndReviews = async () => {
-    setIsLoadingReviews(true);
-    try {
-      const [placeResponse, reviewsResponse] = await Promise.all([
-        axios.get(`http://localhost:8000/api/place/`, {
-          params: { place_id: item.id }, // Adjust as needed
-        }),
-        axios.get(`http://localhost:8000/api/review/`, {
-          params: { place: item.id }, // Adjust as needed
-        }),
-      ]);
-
-      setPlaceDetails(placeResponse.data[0]); // Assuming response is an array of places
-      setReviews(reviewsResponse.data || []);
-    } catch (error) {
-      console.error("Error fetching place details or reviews:", error);
-    } finally {
-      setIsLoadingReviews(false);
-    }
-  };
 
   useEffect(() => {
     if (activeTab === "reviews" && item && type !== "hdb") {
-      fetchPlaceAndReviews();
-    }
-  }, [activeTab, item, type]);
-*/
-  }
-  // Google Review fetcher
-  useEffect(() => {
-    if (activeTab === "reviews" && item && type !== "hdb") {
-      console.log("useEffect triggered for fetching reviews. Item:", item);
       fetchReviews(item.centre_name || item.school_name);
     }
   }, [activeTab, item, type]);
 
   const fetchReviews = async (locationName) => {
-    console.log("fetchReviews called with locationName:", locationName); // Log when the function is called
     setIsLoadingReviews(true);
 
     try {
-      // Replace with your Google API Key
       const googleApiKey = process.env.NEXT_PUBLIC_API_KEY;
-      console.log("Google API Key:", googleApiKey); // Check if the API key is available
 
-      // Step 1: Get the Place ID
-      console.log("Sending request to get Place ID...");
       const placeResponse = await axios.get(
         "https://maps.googleapis.com/maps/api/place/findplacefromtext/json",
         {
@@ -145,14 +116,10 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
           },
         }
       );
-      console.log("Place ID response:", placeResponse.data); // Log the response for the Place ID
 
       if (placeResponse.data.candidates.length > 0) {
         const placeId = placeResponse.data.candidates[0].place_id;
-        console.log("Place ID found:", placeId);
 
-        // Step 2: Fetch the reviews using the Place ID
-        console.log("Sending request to get reviews for Place ID:", placeId);
         const reviewResponse = await axios.get(
           "https://maps.googleapis.com/maps/api/place/details/json",
           {
@@ -163,40 +130,27 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
             },
           }
         );
-        console.log("Review response:", reviewResponse.data); // Log the response for the reviews
 
         const result = reviewResponse.data.result;
         setPlaceDetails({
           name: locationName,
-          rating: result.rating, // Add the rating to the state
+          rating: result.rating,
         });
 
         setReviews(result.reviews || []);
-        console.log("Reviews set:", result.reviews);
       } else {
-        console.warn("No Place ID found for", locationName);
-        setPlaceDetails(null); // Reset if no place details are found
+        setPlaceDetails(null);
         setReviews([]);
       }
     } catch (error) {
       console.error("Error fetching reviews from Google:", error);
     } finally {
       setIsLoadingReviews(false);
-      console.log("Fetching reviews finished.");
     }
   };
 
-  // Google review fetcher
-
   const handleViewMap = (targetItem) => {
-    console.log("View Map clicked:", {
-      isMainItem: targetItem === item,
-      targetItem,
-      mainItem: item,
-    });
-
     if (targetItem === item) {
-      // For main item
       const coordinates = {
         ...targetItem,
         latitude: targetItem.results
@@ -206,11 +160,8 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
           ? targetItem.results.longitude
           : targetItem.longitude,
       };
-      console.log("Using coordinates:", coordinates);
       onViewMap(coordinates);
     } else {
-      // For nearby items
-      console.log("Using nearby item directly:", targetItem);
       onViewMap(targetItem);
     }
   };
@@ -328,7 +279,6 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
     }
 
     if (type === "hdb") {
-      // Show schools and preschools for HDB
       const hasNearbyItems =
         nearbyItems.schools.length > 0 || nearbyItems.preschools.length > 0;
 
@@ -366,7 +316,6 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
         </div>
       );
     } else {
-      // Show HDB for schools and preschools
       if (!nearbyItems.hdb?.length) {
         return (
           <div className="text-center text-gray-600 p-4">
@@ -389,7 +338,7 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
       );
     }
   };
-  // Google Review fetcher
+
   const renderReview = (review, index) => (
     <div key={review.id || index} className="p-3 border-bottom">
       <div className="d-flex align-items-center mb-2">
@@ -414,33 +363,6 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
     </div>
   );
 
-  // Google Review fetcher
-
-  //Dummy review from db
-  /*
-  const renderReview = (review) => (
-    <div key={review.id} className="p-3 border-bottom">
-      <div className="d-flex align-items-center mb-2">
-        <div className="ms-2">
-          <a href={review.author_url} target="_blank" rel="noopener noreferrer">
-            <strong>{review.author_name}</strong>
-          </a>
-          <p className="mb-0 text-muted">{review.relative_time_description}</p>
-        </div>
-      </div>
-      <p className="mb-1">{review.text}</p>
-      <p className="mb-0"><strong>Rating:</strong> {review.rating} / 5</p>
-    </div>
-  );
-  const renderPlaceDetails = () => (
-    <div className="p-3">
-    <h5>Place Details</h5>
-    <p><strong>Name:</strong> {placeDetails?.name}</p>
-    <p><strong>Rating:</strong> {placeDetails?.rating} / 5</p>
-    </div>
-  );
-  */
-
   return (
     <Modal
       show={show}
@@ -450,16 +372,35 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
       className={styles.modal}
     >
       <Modal.Header closeButton>
-        <Modal.Title>
-          {type === "hdb"
-            ? item?.street_name
-            : type === "school"
-            ? item?.school_name
-            : item?.centre_name}
-          {activeTab === "reviews" && placeDetails?.rating && (
-            <span className="text-muted ml-2">({placeDetails.rating} / 5)</span>
-          )}
-        </Modal.Title>
+        <div className="d-flex justify-content-between align-items-center w-100">
+          <Modal.Title>
+            {type === "hdb"
+              ? item?.street_name
+              : type === "school"
+              ? item?.school_name
+              : item?.centre_name}
+            {activeTab === "reviews" && placeDetails?.rating && (
+              <span className="text-muted ml-2">({placeDetails.rating} / 5)</span>
+            )}
+          </Modal.Title>
+          <Button
+            variant={isSaved ? "outline-success" : "outline-secondary"}
+            size="sm"
+            onClick={() => onToggleSave(item)}
+          >
+            {isSaved ? (
+              <>
+                <BookmarkCheck size={18} className="me-2" />
+                Saved
+              </>
+            ) : (
+              <>
+                <BookmarkPlus size={18} className="me-2" />
+                Save
+              </>
+            )}
+          </Button>
+        </div>
       </Modal.Header>
 
       <Modal.Body className="p-0">
@@ -486,24 +427,24 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
                   <Button
                     variant="primary"
                     onClick={() => handleViewMap(item)}
-                    className=" mt-4"
+                    className="mt-4"
                   >
                     View Location on Map
                   </Button>
                 </div>
                 {type === "hdb" && (
-                <div className="">
-                  <a
-                    href={`https://www.propertyguru.com.sg/property-for-sale?market=residential&freetext=${encodeURIComponent(
-                      item?.street_name || ""
-                    )}&listing_type=sale&search=true`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-secondary mt-4 text-right"
-                  >
-                    Search Property on PropertyGuru
-                  </a>
-                </div>
+                  <div className="">
+                    <a
+                      href={`https://www.propertyguru.com.sg/property-for-sale?market=residential&freetext=${encodeURIComponent(
+                        item?.street_name || ""
+                      )}&listing_type=sale&search=true`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-secondary mt-4 text-right"
+                    >
+                      Search Property on PropertyGuru
+                    </a>
+                  </div>
                 )}
               </div>
             </div>
@@ -519,48 +460,24 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
           >
             <div className="p-4">{renderNearbySection()}</div>
           </Tab>
-          {/*
-    {type !== 'hdb' && (
-            <Tab eventKey="reviews" title="Reviews">
-              <div className="p-4">
-                {isLoadingReviews ? (
-                  <div className="text-center p-4">
-                    <div className="spinner-border text-primary" role="status">
-                      <span className="visually-hidden">Loading...</span>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    {placeDetails && renderPlaceDetails()}
-                    {reviews.length > 0 ? (
-                      <div>
-                        {reviews.map(renderReview)}
-                      </div>
-                    ) : (
-                      <p className="text-center text-muted">No reviews found</p>
-                    )}
-                  </>
-                )}
-              </div>
-            </Tab>
-          )}
-          */}
-          {/* Render the Reviews tab only if the type is not 'hdb' */}
+
           {type !== "hdb" && (
             <Tab
               eventKey="reviews"
               title="Reviews"
-              disabled={type === "hdb"} // Hide Reviews tab for HDB
+              disabled={type === "hdb"}
             >
               <div className="p-4">
-                {isLoadingReviews ? (
+              {isLoadingReviews ? (
                   <div className="text-center p-4">
                     <div className="spinner-border text-primary" role="status">
                       <span className="visually-hidden">Loading...</span>
                     </div>
                   </div>
                 ) : reviews.length > 0 ? (
-                  <div>{reviews.map(renderReview)}</div>
+                  <div>
+                    {reviews.map(renderReview)}
+                  </div>
                 ) : (
                   <p className="text-center text-muted">No reviews found</p>
                 )}
@@ -572,3 +489,5 @@ export const DetailModal = ({ show, onHide, item, type, onViewMap }) => {
     </Modal>
   );
 };
+
+export default DetailModal;

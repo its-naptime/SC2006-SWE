@@ -44,22 +44,22 @@ class PreschoolChargesDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = models.preschool_charges.objects.all()
     serializer_class = serializers.PreschoolChargesSerializer
 
-class UserSchoolSearchListCreate(generics.ListCreateAPIView):
-    queryset = models.UserSchoolSearch.objects.all()
-    serializer_class = serializers.UserSchoolSearchSerializer
+# class UserSchoolSearchListCreate(generics.ListCreateAPIView):
+#     queryset = models.UserSchoolSearch.objects.all()
+#     serializer_class = serializers.UserSchoolSearchSerializer
 
-class UserPreschoolSearchListCreate(generics.ListCreateAPIView):
-    queryset = models.UserPreschoolSearch.objects.all()
-    serializer_class = serializers.UserPreschoolSearchSerializer
+# class UserPreschoolSearchListCreate(generics.ListCreateAPIView):
+#     queryset = models.UserPreschoolSearch.objects.all()
+#     serializer_class = serializers.UserPreschoolSearchSerializer
 
-class UserHDBSearchListCreate(generics.ListCreateAPIView):
-    queryset = models.UserHDBSearch.objects.all()
-    serializer_class = serializers.UserHDBSearchSerializer
+# class UserHDBSearchListCreate(generics.ListCreateAPIView):
+#     queryset = models.UserHDBSearch.objects.all()
+#     serializer_class = serializers.UserHDBSearchSerializer
 
-class Review(generics.ListCreateAPIView):
-    queryset = models.Review.objects.all()
-    serializer_class = serializers.ReviewSerializer
+# class Review(generics.ListCreateAPIView):
+#     queryset = models.Review.objects.all()
+#     serializer_class = serializers.ReviewSerializer
 
-class Place(generics.ListCreateAPIView):
-    queryset = models.Place.objects.all()
-    serializer_class = serializers.PlaceSerializer
+# class Place(generics.ListCreateAPIView):
+#     queryset = models.Place.objects.all()
+#     serializer_class = serializers.PlaceSerializer
