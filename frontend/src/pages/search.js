@@ -203,58 +203,6 @@ const Search = () => {
       }
     };
   
-    const createMarkersFromData = (mainItem, nearbyData) => {
-      // Create main marker
-      const mainMarker = {
-        location: {
-          lat: parseFloat(mainItem.latitude),
-          lng: parseFloat(mainItem.longitude),
-        },
-        title:
-          mainItem.street_name || mainItem.school_name || mainItem.centre_name,
-        type: searchType,
-        isMain: true,
-      };
-  
-      // Create nearby markers
-      let nearbyMarkers = [];
-  
-      if (searchType === "hdb") {
-        nearbyMarkers = [
-          ...nearbyData.schools.map((school) => ({
-            location: {
-              lat: parseFloat(school.latitude),
-              lng: parseFloat(school.longitude),
-            },
-            title: school.school_name,
-            type: "school",
-            distance: school.distance,
-          })),
-          ...nearbyData.preschools.map((preschool) => ({
-            location: {
-              lat: parseFloat(preschool.latitude),
-              lng: parseFloat(preschool.longitude),
-            },
-            title: preschool.centre_name,
-            type: "preschool",
-            distance: preschool.distance,
-          })),
-        ];
-      } else {
-        nearbyMarkers = nearbyData.hdb.map((hdb) => ({
-          location: {
-            lat: parseFloat(hdb.latitude),
-            lng: parseFloat(hdb.longitude),
-          },
-          title: `${hdb.block} ${hdb.street_name}`,
-          type: "hdb",
-          distance: hdb.distance,
-        }));
-      }
-  
-      return [mainMarker, ...nearbyMarkers];
-    };
-  
   // Helper Functions
   const initializeFilters = (query) => {
     const newFilters = { ...filters };
@@ -511,49 +459,53 @@ const Search = () => {
     setSelectedItem(null);
   };
 
-  const handleViewMap = async (item) => {
+  const handleViewMap = async (item, itemType = null) => {
     try {
       setIsMovingMap(true);
       setIsLoadingMarkers(true);
-
+  
       setCurrentViewMarkers([]);
       setNearbyResults({
         schools: [],
         preschools: [],
         hdb: [],
       });
-
+  
       if (showModal) {
         handleCloseModal();
       }
-
+  
+      // Use the passed itemType or fall back to searchType
+      const currentType = itemType || searchType;
+  
       const location = {
         lat: parseFloat(item.latitude),
         lng: parseFloat(item.longitude),
       };
-
+  
       if (mapRef.current) {
         mapRef.current.panTo(location);
         mapRef.current.setZoom(15);
       }
-
+  
       const nearbyData = await fetchNearbyItemsData(
         location.lat,
         location.lng,
-        searchType,
+        currentType,  // Use currentType instead of searchType
         item.id
       );
-
+  
       setNearbyResults(nearbyData);
-
-      const markers = createMarkersFromData(item, nearbyData);
+  
+      // Pass the correct type to createMarkersFromData
+      const markers = createMarkersFromData(item, nearbyData, currentType);
       setCurrentViewMarkers(markers);
-
+  
       if (mapRef.current && markers.length > 1) {
         const bounds = new google.maps.LatLngBounds();
         markers.forEach((marker) => bounds.extend(marker.location));
         mapRef.current.fitBounds(bounds);
-
+  
         google.maps.event.addListenerOnce(
           mapRef.current,
           "bounds_changed",
@@ -564,7 +516,7 @@ const Search = () => {
           }
         );
       }
-
+  
       setCurrentMapLocation(location);
     } catch (error) {
       console.error("Error in handleViewMap:", error);
@@ -573,6 +525,59 @@ const Search = () => {
       setIsMovingMap(false);
       setIsLoadingMarkers(false);
     }
+  };
+  
+  // Update createMarkersFromData to use the passed type
+  const createMarkersFromData = (mainItem, nearbyData, mainType) => {
+    // Create main marker with the correct type
+    const mainMarker = {
+      location: {
+        lat: parseFloat(mainItem.latitude),
+        lng: parseFloat(mainItem.longitude),
+      },
+      title:
+        mainItem.street_name || mainItem.school_name || mainItem.centre_name,
+      type: mainType, // Use passed type instead of searchType
+      isMain: true,
+    };
+  
+    // Create nearby markers
+    let nearbyMarkers = [];
+  
+    if (mainType === "hdb") {
+      nearbyMarkers = [
+        ...nearbyData.schools.map((school) => ({
+          location: {
+            lat: parseFloat(school.latitude),
+            lng: parseFloat(school.longitude),
+          },
+          title: school.school_name,
+          type: "school", // Explicitly set type
+          distance: school.distance,
+        })),
+        ...nearbyData.preschools.map((preschool) => ({
+          location: {
+            lat: parseFloat(preschool.latitude),
+            lng: parseFloat(preschool.longitude),
+          },
+          title: preschool.centre_name,
+          type: "preschool", // Explicitly set type
+          distance: preschool.distance,
+        })),
+      ];
+    } else {
+      nearbyMarkers = nearbyData.hdb.map((hdb) => ({
+        location: {
+          lat: parseFloat(hdb.latitude),
+          lng: parseFloat(hdb.longitude),
+        },
+        title: `${hdb.block} ${hdb.street_name}`,
+        type: "hdb", // Explicitly set type
+        distance: hdb.distance,
+      }));
+    }
+  
+    return [mainMarker, ...nearbyMarkers];
   };
 
   const updateSearchParams = (newParams) => {
