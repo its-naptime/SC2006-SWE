@@ -1,4 +1,3 @@
-// pages/profile.js
 import React, { useState, useEffect } from 'react';
 import { Tab, Tabs, Button } from 'react-bootstrap';
 import { useRouter } from 'next/router';
@@ -25,12 +24,6 @@ const ProfilePage = () => {
   const { isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
-    if (isAuthenticated){
-      fetchSavedItems();
-    }
-  }, []);
-  
-  useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/');
     } else if (isAuthenticated) {
@@ -38,43 +31,6 @@ const ProfilePage = () => {
     }
   }, [isAuthenticated, isLoading]);
 
-  const handleToggleSave = async (item) => {
-    if (!isAuthenticated) {
-      return;
-    }
-    try {
-      const typeMap = {
-        'hdb': 'hdbs',
-        'school': 'schools',
-        'preschool': 'preschools'
-      };
-      
-      const type = typeMap[activeTab];
-      const idField = `${activeTab}_id`;
-      
-      // Use the toggle_save endpoint
-      const response = await api.post(`/api/catalogue/saved-${type}/toggle_save/`, {
-        [idField]: item.id
-      });
-
-      if (response.data.status === 'removed') {
-        setSavedItems(prev => ({
-          ...prev,
-          [activeTab]: prev[activeTab].filter(id => id !== item.id)
-        }));
-      } else if (response.data.status === 'saved') {
-        setSavedItems(prev => ({
-          ...prev,
-          [activeTab]: [...prev[activeTab], item.id]
-        }));
-      }
-    } catch (error) {
-      console.error('Error toggling save:', error);
-    }
-  };
-  const isItemSaved = (itemId) => {
-    return savedItems[activeTab]?.includes(itemId) || false;
-  };
   const fetchSavedItems = async () => {
     try {
       setLoading(true);
@@ -89,7 +45,6 @@ const ProfilePage = () => {
         schools: schoolsResponse.data,
         preschools: preschoolsResponse.data
       });
-      console.log(savedItems.hdb);
     } catch (error) {
       console.error('Error fetching saved items:', error);
       setError('Failed to load saved items. Please try again later.');
@@ -98,26 +53,33 @@ const ProfilePage = () => {
     }
   };
 
-  const handleRemoveSaved = async (type, id) => {
+  
+  const handleToggleSave = async (item) => {
+    if (!isAuthenticated) return;
     try {
       let endpoint;
-      switch (type) {
+      let payload;
+  
+      switch (activeTab) {
         case 'hdb':
-          endpoint = `/api/catalogue/saved-hdbs/${id}/`;
+          endpoint = '/api/catalogue/saved-hdbs/toggle_save/';
+          payload = { hdb_id: item };
           break;
-        case 'school':
-          endpoint = `/api/catalogue/saved-schools/${id}/`;
+        case 'schools':
+          endpoint = '/api/catalogue/saved-schools/toggle_save/';
+          payload = { school_id: item };
           break;
-        case 'preschool':
-          endpoint = `/api/catalogue/saved-preschools/${id}/`;
+        case 'preschools':
+          endpoint = '/api/catalogue/saved-preschools/toggle_save/';
+          payload = { preschool_id: item };
           break;
       }
-
-      await api.delete(endpoint);
+  
+      await api.post(endpoint, payload);
       await fetchSavedItems();
     } catch (error) {
-      console.error('Error removing saved item:', error);
-      setError('Failed to remove item. Please try again.');
+      console.error('Error toggling save:', error);
+      setError('Failed to update saved item. Please try again.');
     }
   };
 
@@ -126,7 +88,8 @@ const ProfilePage = () => {
     router.push({
       pathname: '/search',
       query: {
-        activeTab: activeTab,
+        activeTab: activeTab === 'hdb' ? 'hdb' : 
+                  activeTab === 'schools' ? 'school' : 'preschool',
         latitude: item.latitude,
         longitude: item.longitude
       }
@@ -146,6 +109,14 @@ const ProfilePage = () => {
     );
   }
 
+  const isItemSaved = (itemId) => {
+    const currentItems = savedItems[activeTab] || [];
+    return currentItems.some(item => {
+      const itemData = item.hdb || item.school || item.preschool;
+      return itemData.id === itemId;
+    });
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -158,10 +129,7 @@ const ProfilePage = () => {
           onSelect={(k) => setActiveTab(k)}
           className="mb-4"
         >
-          <Tab 
-            eventKey="hdb" 
-            title={`HDB Properties (${savedItems.hdb.length})`}
-          >
+          <Tab eventKey="hdb" title={`HDB Properties (${savedItems.hdb.length})`}>
             {error && (
               <div className="alert alert-danger" role="alert">
                 {error}
@@ -176,8 +144,8 @@ const ProfilePage = () => {
                   onViewMap={() => handleViewMap(item.hdb_details)}
                   onViewDetails={() => handleViewDetails(item.hdb_details)}
                   isMovingMap={isMovingMap}
-                  isSaved={isItemSaved(item.hdb.id)}
-                  onToggleSave={() => handleToggleSave}
+                  isSaved={true}
+                  onToggleSave={() => handleToggleSave(item.hdb)}
                 />
               ))}
               {savedItems.hdb.length === 0 && (
@@ -194,10 +162,7 @@ const ProfilePage = () => {
             </div>
           </Tab>
 
-          <Tab 
-            eventKey="schools" 
-            title={`Schools (${savedItems.schools.length})`}
-          >
+          <Tab eventKey="schools" title={`Schools (${savedItems.schools.length})`}>
             <div className={styles.resultGrid}>
               {savedItems.schools.map((item) => (
                 <SchoolCard
@@ -206,7 +171,7 @@ const ProfilePage = () => {
                   onViewMap={() => handleViewMap(item.school_details)}
                   onViewDetails={() => handleViewDetails(item.school_details)}
                   isMovingMap={isMovingMap}
-                  isSaved={isItemSaved(item.school.id)}
+                  isSaved={true}
                   onToggleSave={() => handleToggleSave(item.school)}
                 />
               ))}
@@ -224,10 +189,7 @@ const ProfilePage = () => {
             </div>
           </Tab>
 
-          <Tab 
-            eventKey="preschools" 
-            title={`Preschools (${savedItems.preschools.length})`}
-          >
+          <Tab eventKey="preschools" title={`Preschools (${savedItems.preschools.length})`}>
             <div className={styles.resultGrid}>
               {savedItems.preschools.map((item) => (
                 <PreschoolCard
@@ -236,7 +198,7 @@ const ProfilePage = () => {
                   onViewMap={() => handleViewMap(item.preschool_details)}
                   onViewDetails={() => handleViewDetails(item.preschool_details)}
                   isMovingMap={isMovingMap}
-                  isSaved={isItemSaved(item.preschool.id)}
+                  isSaved={true}
                   onToggleSave={() => handleToggleSave(item.preschool)}
                 />
               ))}
@@ -259,8 +221,11 @@ const ProfilePage = () => {
           show={showModal}
           onHide={() => setShowModal(false)}
           item={selectedItem}
-          type={activeTab}
+          type={activeTab === 'hdb' ? 'hdb' : 
+                activeTab === 'schools' ? 'school' : 'preschool'}
           onViewMap={handleViewMap}
+          isSaved={true}
+          onToggleSave={handleToggleSave}
         />
       </div>
     </div>
