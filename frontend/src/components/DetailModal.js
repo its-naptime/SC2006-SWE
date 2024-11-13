@@ -149,7 +149,7 @@ export const DetailModal = ({
     }
   };
 
-  const handleViewMap = (targetItem) => {
+  const handleViewMap = (targetItem, targetType = null) => {
     if (targetItem === item) {
       const coordinates = {
         ...targetItem,
@@ -160,9 +160,9 @@ export const DetailModal = ({
           ? targetItem.results.longitude
           : targetItem.longitude,
       };
-      onViewMap(coordinates);
+      onViewMap(coordinates, type); // Pass the original type for the main item
     } else {
-      onViewMap(targetItem);
+      onViewMap(targetItem, targetType || type); // Pass the target type for nearby items
     }
   };
 
@@ -194,7 +194,7 @@ export const DetailModal = ({
         <Button
           size="sm"
           variant="outline-primary"
-          onClick={() => handleViewMap(school)}
+          onClick={() => handleViewMap(school, 'school')}
         >
           View on Map
         </Button>
@@ -230,7 +230,7 @@ export const DetailModal = ({
         <Button
           size="sm"
           variant="outline-primary"
-          onClick={() => handleViewMap(preschool)}
+          onClick={() => handleViewMap(preschool, 'preschool')}
         >
           View on Map
         </Button>
@@ -259,7 +259,7 @@ export const DetailModal = ({
         <Button
           size="sm"
           variant="outline-primary"
-          onClick={() => handleViewMap(hdb)}
+          onClick={() => handleViewMap(hdb, 'hdb')}
         >
           View on Map
         </Button>
