@@ -65,8 +65,8 @@ const Search = () => {
   // Save State
   const [savedItems, setSavedItems] = useState({
     hdb: [],
-    schools: [],
-    preschools: []
+    school: [],
+    preschool: []
   });
 
   // Filter States
@@ -305,8 +305,8 @@ const Search = () => {
 
       setSavedItems({
         hdb: hdbResponse.data.map(item => item.hdb.id),
-        schools: schoolsResponse.data.map(item => item.school.id),
-        preschools: preschoolsResponse.data.map(item => item.preschool.id)
+        school: schoolsResponse.data.map(item => item.school.id),
+        preschool: preschoolsResponse.data.map(item => item.preschool.id)
       });
     } catch (error) {
       console.error('Error fetching saved items:', error);
