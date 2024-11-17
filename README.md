@@ -10,6 +10,7 @@ A comprehensive platform helping young families in Singapore make informed housi
     <a href="#key-components">Components</a> •
     <a href="#tech-stack">Tech Stack</a> •
 </p>
+
 ## Features
 
 - 🔍 Advanced Property Search
